@@ -3,6 +3,7 @@ name = "negmas-geniusweb-bridge"
 version = "0.1.0"
 description = "A bridge that allows you to run GeniusWeb agents in negmas SAOMechanism(s)."
 readme = "README.md"
+license = { file = "LICENSE" }
 authors = [
     { name = "Yasser Mohammad", email = "yasserfarouk@gmail.com" }
 ]
@@ -15,12 +16,14 @@ dependencies = [
     "tudelft-utilities-logging",
     "uri",
     "plotly>=6.5.0",
+    "pytest",
 ]
 
 [project.optional-dependencies]
-test = [
+dev = [
     "pytest",
 ]
+
 
 [tool.uv.sources]
 negmas = { git = "https://github.com/yasserfarouk/negmas", branch = "master" }

@@ -433,13 +433,14 @@ dependencies = [
     { name = "negmas" },
     { name = "plotly" },
     { name = "pyson" },
+    { name = "pytest" },
     { name = "tudelft-utilities" },
     { name = "tudelft-utilities-logging" },
     { name = "uri" },
 ]
 
 [package.optional-dependencies]
-test = [
+dev = [
     { name = "pytest" },
 ]
 
@@ -449,12 +450,13 @@ requires-dist = [
     { name = "negmas", git = "https://github.com/yasserfarouk/negmas?branch=master" },
     { name = "plotly", specifier = ">=6.5.0" },
     { name = "pyson", editable = "vendor/others/pyson" },
-    { name = "pytest", marker = "extra == 'test'" },
+    { name = "pytest" },
+    { name = "pytest", marker = "extra == 'dev'" },
     { name = "tudelft-utilities", editable = "vendor/others/tudelft_utilities" },
     { name = "tudelft-utilities-logging", editable = "vendor/others/tudelft_utilities_logging" },
     { name = "uri", editable = "vendor/others/uri" },
 ]
-provides-extras = ["test"]
+provides-extras = ["dev"]
 
 [[package]]
 name = "networkx"
