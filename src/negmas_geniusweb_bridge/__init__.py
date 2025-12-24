@@ -1,5 +1,5 @@
 from typing import Any
-from .negmas_wrapper import make_geniusweb_negotiator as make_negotiator
+from .wrapper import make_geniusweb_negotiator as make_negotiator
 
 from .ANL2022 import AGENTS as ANL2022_AGENTS
 from .ANL2023 import AGENTS as ANL2023_AGENTS

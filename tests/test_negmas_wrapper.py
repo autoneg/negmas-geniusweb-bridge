@@ -5,20 +5,20 @@ from negmas import SAOMechanism, make_issue
 from negmas.preferences import LinearAdditiveUtilityFunction
 from negmas.sao import AspirationNegotiator
 
-from environment.agents.geniusweb.negmas_wrapper import (
+from negmas_geniusweb_bridge.wrapper import (
     GeniusWebNegotiator,
     make_geniusweb_negotiator,
     _convert_negmas_ufun_to_geniusweb,
     _outcome_to_geniusweb_bid,
     _geniusweb_bid_to_outcome,
 )
-from environment.agents.geniusweb.basic.boulware_agent.boulware_agent import (
+from negmas_geniusweb_bridge.basic.boulware_agent.boulware_agent import (
     BoulwareAgent,
 )
-from environment.agents.geniusweb.basic.conceder_agent.conceder_agent import (
+from negmas_geniusweb_bridge.basic.conceder_agent.conceder_agent import (
     ConcederAgent,
 )
-from environment.agents.geniusweb.basic.linear_agent.linear_agent import LinearAgent
+from negmas_geniusweb_bridge.basic.linear_agent.linear_agent import LinearAgent
 
 
 @pytest.fixture

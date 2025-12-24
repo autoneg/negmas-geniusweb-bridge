@@ -1,14 +1,20 @@
 [project]
 name = "negmas-geniusweb-bridge"
 version = "0.1.0"
-description = "Add your description here"
+description = "A bridge that allows you to run GeniusWeb agents in negmas SAOMechanism(s)."
 readme = "README.md"
 authors = [
     { name = "Yasser Mohammad", email = "yasserfarouk@gmail.com" }
 ]
 requires-python = ">=3.13"
-dependencies = ["negmas",
-"geniuswebcore @ https://tracinsy.ewi.tudelft.nl/pubtrac/GeniusWebPython/export/100/geniuswebcore/dist/geniusweb-1.2.1.tar.gz",
+dependencies = [
+    "negmas",
+    "geniusweb",
+    "pyson",
+    "tudelft-utilities",
+    "tudelft-utilities-logging",
+    "uri",
+    "plotly>=6.5.0",
 ]
 
 [project.optional-dependencies]
@@ -18,6 +24,11 @@ test = [
 
 [tool.uv.sources]
 negmas = { git = "https://github.com/yasserfarouk/negmas", branch = "master" }
+geniusweb = { path = "vendor/geniusweb-1.2.1", editable = true }
+pyson = { path = "vendor/others/pyson", editable = true }
+tudelft-utilities = { path = "vendor/others/tudelft_utilities", editable = true }
+tudelft-utilities-logging = { path = "vendor/others/tudelft_utilities_logging", editable = true }
+uri = { path = "vendor/others/uri", editable = true }
 
 [build-system]
 requires = ["uv_build>=0.9.5,<0.10.0"]

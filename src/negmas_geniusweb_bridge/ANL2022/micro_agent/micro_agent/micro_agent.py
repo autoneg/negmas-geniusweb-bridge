@@ -1,6 +1,5 @@
 import logging
 from random import randint
-from time import time
 from typing import cast
 
 from geniusweb.actions.Accept import Accept
@@ -29,7 +28,7 @@ from geniusweb.progress.ProgressRounds import ProgressRounds
 from geniusweb.references.Parameters import Parameters
 from tudelft_utilities_logging.ReportToLogger import ReportToLogger
 
-#from environment.agents.geniusweb.template_agent.utils.opponent_model import OpponentModel
+# from negmas_geniusweb_bridge.template_agent.utils.opponent_model import OpponentModel
 
 
 class MiCROAgent(DefaultParty):
@@ -51,14 +50,14 @@ class MiCROAgent(DefaultParty):
         self.storage_dir: str = None
 
         self.last_received_bid: Bid = None
-#        self.opponent_model: OpponentModel = None
+        #        self.opponent_model: OpponentModel = None
         self.logger.log(logging.INFO, "party is initialized")
-        
+
         self.allMyBidsSorted: list = None
         self.receivedBids = set()
         self.numUniqueProposalsMadeByMe = 0
-        self.reservationValue = 0 # in ANAC 2022 the reservation value is always 0, so actually we don't really need this value.
-        
+        self.reservationValue = 0  # in ANAC 2022 the reservation value is always 0, so actually we don't really need this value.
+
     def notifyChange(self, data: Inform):
         """MUST BE IMPLEMENTED
         This is the entry point of all interaction with your agent after is has been initialised.
@@ -87,16 +86,15 @@ class MiCROAgent(DefaultParty):
             self.profile = profile_connection.getProfile()
             self.domain = self.profile.getDomain()
             profile_connection.close()
-            
-         
-            #Create a sorted list containing all possible bids.
+
+            # Create a sorted list containing all possible bids.
             domain = self.profile.getDomain()
             all_bids = AllBidsList(domain)
             self.allMyBidsSorted = list(all_bids)
-            self.allMyBidsSorted.sort(reverse=True,key=self.profile.getUtility) 
-            
-            #Test that it is sorted correctly.
-            #for bid in self.allMyBidsSorted:
+            self.allMyBidsSorted.sort(reverse=True, key=self.profile.getUtility)
+
+            # Test that it is sorted correctly.
+            # for bid in self.allMyBidsSorted:
             #   print(bid, self.profile.getUtility(bid))
 
         # ActionDone informs you of an action (an offer or an accept)
@@ -117,7 +115,7 @@ class MiCROAgent(DefaultParty):
             # execute a turn
             self.my_turn()
 
-            #NOTE: ADDED by Bram Renting:
+            # NOTE: ADDED by Bram Renting:
             if isinstance(self.progress, ProgressRounds):
                 self.progress = self.progress.advance()
 
@@ -169,91 +167,89 @@ class MiCROAgent(DefaultParty):
         """
         # if it is an offer, set the last received bid
         if isinstance(action, Offer):
-
             bid = cast(Offer, action).getBid()
-            
+
             # set bid as last received
             self.last_received_bid = bid
-            
+
             # add bid to set of all received bids.
             self.receivedBids.add(bid)
-            
-            #print("")
-            #print("Newly received bid:")
-            #print(bid)
-            #print("Bids received so far:")
-            #for earlierBid in self.receivedBids:
+
+            # print("")
+            # print("Newly received bid:")
+            # print(bid)
+            # print("Bids received so far:")
+            # for earlierBid in self.receivedBids:
             #    print(earlierBid)
 
     def my_turn(self):
         """This method is called when it is our turn. It should decide upon an action
         to perform and send this action to the opponent.
         """
-        
-        #1. Determine whether or not we should concede (i.e make a new proposal as opposed to repeat an earlier proposal)
+
+        # 1. Determine whether or not we should concede (i.e make a new proposal as opposed to repeat an earlier proposal)
         readyToConcede = self.numUniqueProposalsMadeByMe <= len(self.receivedBids)
 
-        #2. Determine whether to accept the opponent's last proposal or not.
+        # 2. Determine whether to accept the opponent's last proposal or not.
         if self.last_received_bid != None:
-                
             accept = self.acceptanceStrategy(readyToConcede)
-            
+
             if accept:
                 action = Accept(self.me, self.last_received_bid)
                 self.send_action(action)
                 return
-               
-               
-        # 3. If we did not accept, then make a counter-proposal (either a new one, or repeat an old one). 
-        
-            # 3a. Get the next bid from our sorted list, after the last one that we have already proposed.
+
+        # 3. If we did not accept, then make a counter-proposal (either a new one, or repeat an old one).
+
+        # 3a. Get the next bid from our sorted list, after the last one that we have already proposed.
         myNextBid = self.allMyBidsSorted[self.numUniqueProposalsMadeByMe]
-            
-            # 3b. Determine whether to propose that one or to repeat one we already proposed before.
-        if readyToConcede and self.profile.getUtility(myNextBid) > self.reservationValue:
-                    
+
+        # 3b. Determine whether to propose that one or to repeat one we already proposed before.
+        if (
+            readyToConcede
+            and self.profile.getUtility(myNextBid) > self.reservationValue
+        ):
             # Propose the next bid in the list.
-            
+
             self.numUniqueProposalsMadeByMe += 1
-            
+
             action = Offer(self.me, myNextBid)
             self.send_action(action)
             return
-            
+
         else:
-            
             # Randomly pick a bid we have already proposed before.
-            randomIndex = randint(0, self.numUniqueProposalsMadeByMe-1)
+            randomIndex = randint(0, self.numUniqueProposalsMadeByMe - 1)
             randomBid = self.allMyBidsSorted[randomIndex]
             action = Offer(self.me, randomBid)
             self.send_action(action)
             return
 
     def acceptanceStrategy(self, readyToConcede: bool) -> bool:
-
         utilityOfLastReceivedOffer = self.profile.getUtility(self.last_received_bid)
-        
+
         if utilityOfLastReceivedOffer <= self.reservationValue:
-            return False;
-        
+            return False
+
         if readyToConcede:
-            lowestAcceptableBid = self.allMyBidsSorted[self.numUniqueProposalsMadeByMe]  #The next bid we are willing to propose. 
+            lowestAcceptableBid = self.allMyBidsSorted[
+                self.numUniqueProposalsMadeByMe
+            ]  # The next bid we are willing to propose.
         else:
-            lowestAcceptableBid = self.allMyBidsSorted[self.numUniqueProposalsMadeByMe-1] # The lowest bid we have already proposed.
-        
-        lowestAcceptableUtility = self.profile.getUtility(lowestAcceptableBid);
-        
-        
-        return utilityOfLastReceivedOffer >= lowestAcceptableUtility;
+            lowestAcceptableBid = self.allMyBidsSorted[
+                self.numUniqueProposalsMadeByMe - 1
+            ]  # The lowest bid we have already proposed.
 
+        lowestAcceptableUtility = self.profile.getUtility(lowestAcceptableBid)
 
+        return utilityOfLastReceivedOffer >= lowestAcceptableUtility
 
     def save_data(self):
         """This method is called after the negotiation is finished. It can be used to store data
         for learning capabilities. Note that no extensive calculations can be done within this method.
         Taking too much time might result in your agent being killed, so use it for storage only.
         """
-        #data = "Data for learning (see README.md)"
-        #with open(f"{self.storage_dir}/data.md", "w") as f:
+        # data = "Data for learning (see README.md)"
+        # with open(f"{self.storage_dir}/data.md", "w") as f:
         #    f.write(data)
         pass
