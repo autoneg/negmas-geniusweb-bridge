@@ -2,9 +2,10 @@
 
 ## Build/Test Commands
 - Install: `uv sync`
-- Run all tests: `uv run pytest`
-- Run single test: `uv run pytest tests/test_negmas_wrapper.py::TestConversions::test_convert_ufun_to_geniusweb -v`
-- Run test file: `uv run pytest tests/test_negmas_wrapper.py -v`
+- Run all tests: `python -m pytest`
+- Run single test: `python -m pytest tests/test_negmas_wrapper.py::TestConversions::test_convert_ufun_to_geniusweb -v`
+- Run test file: `python -m pytest tests/test_negmas_wrapper.py -v`
+- Do not use uv run for running. activate the venv and use its python instead.
 
 ## Code Style
 - **Python**: 3.13+, type hints required for function signatures

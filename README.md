@@ -2,6 +2,30 @@
 
 A bridge that allows you to run [GeniusWeb](https://tracinsy.ewi.tudelft.nl/pubtrac/GeniusWeb) negotiation agents within [NegMAS](https://github.com/yasserfarouk/negmas) mechanisms.
 
+## Official GeniusWeb Resources
+
+This project builds upon the official GeniusWeb framework. For the original implementations:
+
+- **GeniusWeb (Java)**: [https://gitlab.ewi.tudelft.nl/interactive-intelligence/geniusweb/geniusweb](https://gitlab.ewi.tudelft.nl/interactive-intelligence/geniusweb/geniusweb)
+- **GeniusWeb (Python)**: [https://gitlab.ewi.tudelft.nl/interactive-intelligence/geniusweb/geniuswebpython](https://gitlab.ewi.tudelft.nl/interactive-intelligence/geniusweb/geniuswebpython)
+- **GeniusWeb Project Home**: [https://gitlab.ewi.tudelft.nl/interactive-intelligence/geniusweb](https://gitlab.ewi.tudelft.nl/interactive-intelligence/geniusweb)
+
+The official repositories contain:
+- Complete GeniusWeb framework implementation (Java and Python)
+- Competition agents from ANAC 2020-2022
+- Documentation and examples
+
+## AI-Assisted Development Disclaimer
+
+**Important Notice**: Parts of this project were developed with AI assistance:
+
+- **GeniusWeb-to-NegMAS Wrapper** (`wrapper.py`): The bridge wrapper that enables GeniusWeb agents to run in NegMAS mechanisms was developed in part using AI assistance.
+- **Java-to-Python Translations**: The negotiation agents in the `anac2020/`, `anac2021/`, and `ai2020/` directories were translated from their original Java implementations to Python using AI. These translations aim to preserve the original algorithms and strategies but may contain differences from the original implementations.
+
+The original Python agents (in `basic/`, `anl2022/`, `anl2023/`, `cse3210/`) were written directly in Python by their original authors and are not AI-translated.
+
+Users should be aware that AI-translated code may require additional validation for research or production use.
+
 ## Installation
 
 ```bash
@@ -119,10 +143,16 @@ negotiator = BoulwareNegotiator(ufun=my_ufun, name="boulware1")
 
 The bridge includes agents from several GeniusWeb competitions:
 
+### Native Python Agents
 - **Basic agents**: `BoulwareAgent`, `ConcederAgent`, `LinearAgent`, `HardlinerAgent`, `RandomAgent`
 - **ANL2022**: Competition agents from the Automated Negotiating Agents Competition 2022
 - **ANL2023**: Competition agents from ANL 2023
 - **CSE3210**: Educational agents from TU Delft course
+
+### AI-Translated Agents (from Java)
+- **ANAC2020**: Agents from ANAC 2020 competition (AI-translated from Java)
+- **ANAC2021**: Agents from ANAC 2021 competition (AI-translated from Java)
+- **AI2020**: Agents from AI course 2020 (AI-translated from Java)
 
 ## Testing
 

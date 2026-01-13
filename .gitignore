@@ -68,3 +68,7 @@ MANIFEST
 .env
 .env.local
 *.local
+external/
+PROGRESS.md
+
+

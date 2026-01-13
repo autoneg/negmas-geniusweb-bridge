@@ -230,5 +230,123 @@ class TestCleanup:
             assert not os.path.exists(neg_a._tmp_dir)
 
 
+class TestTranslatedAgents:
+    """Test AI-translated agents from ANAC 2020."""
+
+    def test_hamming_agent_import(self):
+        """Test that HammingAgent can be imported."""
+        from negmas_geniusweb_bridge.anac2020.hamming_agent.hamming_agent import (
+            HammingAgent,
+        )
+
+        assert HammingAgent is not None
+
+    def test_shine_agent_import(self):
+        """Test that ShineAgent can be imported."""
+        from negmas_geniusweb_bridge.anac2020.shine_agent.shine_agent import ShineAgent
+
+        assert ShineAgent is not None
+
+    def test_wrapped_agents_import(self):
+        """Test that GW-prefixed wrapped agents can be imported."""
+        from negmas_geniusweb_bridge import GWHammingAgent, GWShineAgent
+
+        assert GWHammingAgent is not None
+        assert GWShineAgent is not None
+
+    def test_hamming_agent_negotiation(self, simple_issues, ufun_a, ufun_b):
+        """Test negotiation with HammingAgent."""
+        from negmas_geniusweb_bridge.anac2020.hamming_agent.hamming_agent import (
+            HammingAgent,
+        )
+
+        mechanism = SAOMechanism(issues=simple_issues, n_steps=50)
+
+        neg_a = GeniusWebNegotiator(
+            party_class=HammingAgent,
+            ufun=ufun_a,
+            name="hamming",
+        )
+        neg_b = AspirationNegotiator(ufun=ufun_b, name="aspiration")
+
+        mechanism.add(neg_a)
+        mechanism.add(neg_b)
+
+        mechanism.run()
+
+        state = mechanism.state
+        assert not state.running
+        assert state.step > 0
+
+    def test_shine_agent_negotiation(self, simple_issues, ufun_a, ufun_b):
+        """Test negotiation with ShineAgent."""
+        from negmas_geniusweb_bridge.anac2020.shine_agent.shine_agent import ShineAgent
+
+        mechanism = SAOMechanism(issues=simple_issues, n_steps=50)
+
+        neg_a = GeniusWebNegotiator(
+            party_class=ShineAgent,
+            ufun=ufun_a,
+            name="shine",
+        )
+        neg_b = AspirationNegotiator(ufun=ufun_b, name="aspiration")
+
+        mechanism.add(neg_a)
+        mechanism.add(neg_b)
+
+        mechanism.run()
+
+        state = mechanism.state
+        assert not state.running
+        assert state.step > 0
+
+    def test_wrapped_hamming_agent(self, simple_issues, ufun_a, ufun_b):
+        """Test using GWHammingAgent directly."""
+        from negmas_geniusweb_bridge import GWHammingAgent
+
+        mechanism = SAOMechanism(issues=simple_issues, n_steps=50)
+
+        neg_a = GWHammingAgent(ufun=ufun_a, name="gw_hamming")
+        neg_b = AspirationNegotiator(ufun=ufun_b, name="aspiration")
+
+        mechanism.add(neg_a)
+        mechanism.add(neg_b)
+
+        mechanism.run()
+
+        state = mechanism.state
+        assert not state.running
+        assert state.step > 0
+
+    def test_translated_vs_translated(self, simple_issues, ufun_a, ufun_b):
+        """Test negotiation between two translated agents."""
+        from negmas_geniusweb_bridge.anac2020.hamming_agent.hamming_agent import (
+            HammingAgent,
+        )
+        from negmas_geniusweb_bridge.anac2020.shine_agent.shine_agent import ShineAgent
+
+        mechanism = SAOMechanism(issues=simple_issues, n_steps=50)
+
+        neg_a = GeniusWebNegotiator(
+            party_class=HammingAgent,
+            ufun=ufun_a,
+            name="hamming",
+        )
+        neg_b = GeniusWebNegotiator(
+            party_class=ShineAgent,
+            ufun=ufun_b,
+            name="shine",
+        )
+
+        mechanism.add(neg_a)
+        mechanism.add(neg_b)
+
+        mechanism.run()
+
+        state = mechanism.state
+        assert not state.running
+        assert state.step > 0
+
+
 if __name__ == "__main__":
     pytest.main([__file__, "-v"])

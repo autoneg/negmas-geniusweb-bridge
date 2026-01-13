@@ -21,12 +21,20 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = [
-    "pytest",
+    "pytest>=7.0.0",
+    "pytest-cov>=4.0.0",
+]
+
+[dependency-groups]
+docs = [
+    "mkdocs>=1.6.1",
+    "mkdocs-material>=9.7.1",
+    "mkdocstrings[python]>=0.29.0",
+    "pymdown-extensions>=10.0",
 ]
 
 
 [tool.uv.sources]
-negmas = { git = "https://github.com/yasserfarouk/negmas", branch = "master" }
 geniusweb = { path = "vendor/geniusweb-1.2.1", editable = true }
 pyson = { path = "vendor/others/pyson", editable = true }
 tudelft-utilities = { path = "vendor/others/tudelft_utilities", editable = true }
