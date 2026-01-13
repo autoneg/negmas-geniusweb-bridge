@@ -141,18 +141,131 @@ negotiator = BoulwareNegotiator(ufun=my_ufun, name="boulware1")
 
 ## Available Agents
 
-The bridge includes agents from several GeniusWeb competitions:
+The bridge includes **80+ agents** from several GeniusWeb competitions. Each module exports:
+- `AGENTS`: Dictionary of raw GeniusWeb party classes
+- `WRAPPED_AGENTS`: Dictionary of NegMAS-wrapped negotiator classes (GW-prefixed)
+- `AGENT_NOTES`: Known issues/notes about specific agents
 
-### Native Python Agents
-- **Basic agents**: `BoulwareAgent`, `ConcederAgent`, `LinearAgent`, `HardlinerAgent`, `RandomAgent`
-- **ANL2022**: Competition agents from the Automated Negotiating Agents Competition 2022
-- **ANL2023**: Competition agents from ANL 2023
-- **CSE3210**: Educational agents from TU Delft course
+### Agent Summary
 
-### AI-Translated Agents (from Java)
-- **ANAC2020**: Agents from ANAC 2020 competition (AI-translated from Java)
-- **ANAC2021**: Agents from ANAC 2021 competition (AI-translated from Java)
-- **AI2020**: Agents from AI course 2020 (AI-translated from Java)
+| Module | Count | Type | Description |
+|--------|-------|------|-------------|
+| `basic` | 7 | Python Native | Reference implementations (Boulware, Conceder, Linear, etc.) |
+| `anac2020` | 13 | AI-Translated | ANAC 2020 competition agents (from Java) |
+| `anl2022` | 19 | Python Native | Automated Negotiation League 2022 |
+| `anl2023` | 16 | Python Native | Automated Negotiation League 2023 |
+| `cse3210` | 25 | Python Native | TU Delft CSE3210 course agents |
+| **Total** | **80** | | |
+
+### Basic Agents (7)
+
+Reference implementations of classic negotiation strategies.
+
+| Agent | Description | Notes |
+|-------|-------------|-------|
+| `BoulwareAgent` | Time-dependent concession (hardliner early, concedes late) | |
+| `ConcederAgent` | Time-dependent concession (concedes early) | |
+| `LinearAgent` | Linear concession over time | |
+| `HardlinerAgent` | Never concedes | Only useful for testing |
+| `RandomAgent` | Random bid selection | |
+| `StupidAgent` | Simple random behavior | Test agent |
+| `TimeDependentAgent` | Base class for time-dependent strategies | Configurable via `e` parameter |
+
+### ANAC 2020 Agents (13) - AI-Translated from Java
+
+Agents from the Automated Negotiating Agents Competition 2020. These were translated from Java using AI assistance.
+
+| Agent | Protocol | Description |
+|-------|----------|-------------|
+| `AgentKT` | SHAOP/SAOP | COBYLA optimization with game-theoretic thresholds |
+| `AgentP1DAMO` | SHAOP | Hill climbing with importance maps |
+| `AgentXX` | SHAOP/SAOP | Importance maps with Nash point estimation |
+| `AhBuNeAgent` | SHAOP | Similarity-based bidding with elicitation |
+| `Anaconda` | SHAOP | Dynamic lower bounds with elicitation |
+| `Angel` | SHAOP/SAOP | Heuristic opponent modeling with elicitation |
+| `AzarAgent` | SHAOP/SAOP | GravityEs user model with frequency modeling |
+| `BlingBling` | SHAOP/SAOP | RankNet neural network for preference learning |
+| `DUOAgent` | SHAOP/SAOP | Linear regression for bid prediction |
+| `ForArisa` | SAOP | Genetic algorithm for utility estimation |
+| `HammingAgent` | SAOP | Hamming distance for opponent modeling |
+| `NiceAgent` | SHAOP/SAOP | Elicitation with mirroring strategy |
+| `ShineAgent` | SAOP | Adaptive agent with dynamic strategy |
+
+### ANL 2022 Agents (19) - Python Native
+
+Agents from the Automated Negotiation League 2022. Written in Python by their original authors.
+
+| Agent | Notes |
+|-------|-------|
+| `Agent007` | |
+| `Agent4410` | |
+| `AgentFish` | |
+| `AgentFO2` | |
+| `BIU_agent` | May timeout >60 secs on some domains |
+| `ChargingBoul` | |
+| `CompromisingAgent` | May cause "Action cannot be None" errors |
+| `DreamTeam109Agent` | |
+| `GEAAgent` | Slow execution (~1.5sec per turn) |
+| `LearningAgent` | May cause "Action cannot be None" errors |
+| `LuckyAgent2022` | |
+| `MiCROAgent` | |
+| `Pinar_Agent` | Requires `lightgbm` package (optional) |
+| `ProcrastinAgent` | May have issues with first offer accepted |
+| `RGAgent` | |
+| `SmartAgent` | |
+| `SuperAgent` | |
+| `ThirdAgent` | |
+| `Tjaronchery10Agent` | |
+
+### ANL 2023 Agents (16) - Python Native
+
+Agents from the Automated Negotiation League 2023. Written in Python by their original authors.
+
+| Agent | Notes |
+|-------|-------|
+| `AgentFO3` | |
+| `AmbitiousAgent` | |
+| `AntAllianceAgent` | |
+| `AntHeartAgent` | |
+| `ColmanAnacondotAgent2` | |
+| `ExploitAgent` | |
+| `GOTAgent` | |
+| `HybridAgent2023` | |
+| `KBTimeDiffAgent` | |
+| `Micro2023` | |
+| `MSCAgent` | Requires `gym`, `torch`, `stable-baselines3` (optional) |
+| `PopularAgent` | |
+| `SmartAgent2023` | |
+| `SpaghettiAgent` | |
+| `TripleEAgent` | |
+
+### CSE3210 Agents (25) - Python Native
+
+Agents from the TU Delft CSE3210 Negotiation course. Written in Python by students.
+
+| Agent | Notes |
+|-------|-------|
+| `Agent2` - `Agent68` | 25 agents total |
+| `Agent22` | May throw scipy divide by zero errors |
+| `Agent68` | May have issues handling opening bid |
+
+## Accessing Agents Programmatically
+
+```python
+# Import all agents from a module
+from negmas_geniusweb_bridge.anac2020 import AGENTS, WRAPPED_AGENTS, AGENT_METADATA
+from negmas_geniusweb_bridge.anl2022 import AGENTS, WRAPPED_AGENTS, AGENT_NOTES
+from negmas_geniusweb_bridge.anl2023 import AGENTS, WRAPPED_AGENTS
+from negmas_geniusweb_bridge.cse3210 import AGENTS, WRAPPED_AGENTS
+from negmas_geniusweb_bridge.basic import AGENTS, WRAPPED_AGENTS
+
+# List all available agents
+print(list(AGENTS.keys()))
+
+# Use a wrapped agent directly
+from negmas_geniusweb_bridge.anac2020 import GWHammingAgent
+agent = GWHammingAgent(name="my_agent")
+```
 
 ## Testing
 

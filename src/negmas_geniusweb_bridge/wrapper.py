@@ -72,6 +72,18 @@ if GENIUS_WEB_AVAILABLE:
         def reset(self) -> None:
             self.action = None
 
+        def addListener(self, listener: Any) -> None:
+            """No-op for dummy connection."""
+            pass
+
+        def removeListener(self, listener: Any) -> None:
+            """No-op for dummy connection."""
+            pass
+
+        def close(self) -> None:
+            """No-op for dummy connection."""
+            pass
+
     class _DummyReporter(Reporter):
         """A dummy reporter that silences all logging from GeniusWeb parties."""
 
