@@ -142,7 +142,7 @@ class GEAAgent(DefaultParty):
             # execute a turn
             self.my_turn()
 
-            #NOTE: ADDED by Bram Renting:
+            # NOTE: ADDED by Bram Renting:
             if isinstance(self.progress, ProgressRounds):
                 self.progress = self.progress.advance()
 
@@ -209,7 +209,7 @@ class GEAAgent(DefaultParty):
         """This method is called when it is our turn. It should decide upon an action
         to perform and send this action to the opponent.
         """
-            
+
         # check if the last received offer is good enough
         if self.accept_condition(self.last_received_bid):
             # if so, accept the offer
@@ -286,7 +286,7 @@ class GEAAgent(DefaultParty):
         return best_bid
 
     def score_bid(self, bid: Bid, alpha: float = 0.95, eps: float = 0.1) -> float:
-        ''' Calculate heuristic score for a bid '''
+        """Calculate heuristic score for a bid"""
         progress = self.progress.get(time() * 1000)
 
         our_utility = float(self.profile.getUtility(bid))
@@ -299,35 +299,44 @@ class GEAAgent(DefaultParty):
 
         return score
 
-
     def tree_predict(self, bid: Bid) -> float:
-        ''' returns acceptance estimation for the other agent '''
+        """returns acceptance estimation for the other agent"""
         bid_data = []
         bid_issue_values = bid.getIssueValues()
         domain_issues = list(bid_issue_values.keys())
         domain_issues.sort()
         for issue in domain_issues:
             # encode categorical data
-            issue_encoded = label_binarize([str(bid_issue_values[issue])], classes=self.all_issue_values[issue])
+            issue_encoded = label_binarize(
+                [str(bid_issue_values[issue])], classes=self.all_issue_values[issue]
+            )
             # concat current category to X
             bid_data.extend(issue_encoded.flatten().tolist())
 
         # if the tree is trained, we can use it to predict opponent reaction
         if self.decision_model is not None:
-            tree_prediction = float(self.decision_model.predict(np.array(bid_data).reshape(1, -1)))
+            prediction = self.decision_model.predict(np.array(bid_data).reshape(1, -1))
+            # predict() returns an array, get the first element
+            tree_prediction = (
+                float(prediction[0])
+                if hasattr(prediction, "__getitem__")
+                else float(prediction)
+            )
             return tree_prediction
 
         return 0  # no knowledge
 
     def append_data_and_train_tree(self, bid: Bid, opponent_accept: int) -> None:
-        ''' appends new bid to negotiation history and retrain model '''
+        """appends new bid to negotiation history and retrain model"""
         bid_data = []
         bid_issue_values = bid.getIssueValues()
         domain_issues = list(bid_issue_values.keys())
         domain_issues.sort()
         for issue in domain_issues:
             # encode categorical data
-            issue_encoded = label_binarize([str(bid_issue_values[issue])], classes=self.all_issue_values[issue])
+            issue_encoded = label_binarize(
+                [str(bid_issue_values[issue])], classes=self.all_issue_values[issue]
+            )
             # concat current category to X
             bid_data.extend(issue_encoded.flatten().tolist())
 
@@ -338,11 +347,13 @@ class GEAAgent(DefaultParty):
         # train tree if at least two samples were collected
 
         if self.data_len > 2:
-            self.decision_model = tree.DecisionTreeClassifier(criterion="entropy", max_depth=self.tree_depth)
+            self.decision_model = tree.DecisionTreeClassifier(
+                criterion="entropy", max_depth=self.tree_depth
+            )
             self.decision_model.fit(self.dataX, self.dataY)
 
     def init_bid_values(self):
-        ''' must be called to binarize labels '''
+        """must be called to binarize labels"""
         domain = self.profile.getDomain()
         domain_issues = domain.getIssues()
         self.all_issue_values = {}
