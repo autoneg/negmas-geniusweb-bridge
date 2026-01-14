@@ -829,19 +829,16 @@ dependencies = [
     { name = "negmas" },
     { name = "plotly" },
     { name = "pyson" },
-    { name = "pytest" },
     { name = "tudelft-utilities" },
     { name = "tudelft-utilities-logging" },
     { name = "uri" },
 ]
 
-[package.optional-dependencies]
+[package.dev-dependencies]
 dev = [
     { name = "pytest" },
     { name = "pytest-cov" },
 ]
-
-[package.dev-dependencies]
 docs = [
     { name = "mkdocs" },
     { name = "mkdocs-material" },
@@ -855,16 +852,16 @@ requires-dist = [
     { name = "negmas" },
     { name = "plotly", specifier = ">=6.5.0" },
     { name = "pyson", editable = "vendor/others/pyson" },
-    { name = "pytest" },
-    { name = "pytest", marker = "extra == 'dev'", specifier = ">=7.0.0" },
-    { name = "pytest-cov", marker = "extra == 'dev'", specifier = ">=4.0.0" },
     { name = "tudelft-utilities", editable = "vendor/others/tudelft_utilities" },
     { name = "tudelft-utilities-logging", editable = "vendor/others/tudelft_utilities_logging" },
     { name = "uri", editable = "vendor/others/uri" },
 ]
-provides-extras = ["dev"]
 
 [package.metadata.requires-dev]
+dev = [
+    { name = "pytest", specifier = ">=7.0.0" },
+    { name = "pytest-cov", specifier = ">=4.0.0" },
+]
 docs = [
     { name = "mkdocs", specifier = ">=1.6.1" },
     { name = "mkdocs-material", specifier = ">=9.7.1" },
