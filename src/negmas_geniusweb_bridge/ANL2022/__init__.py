@@ -15,14 +15,14 @@ from ..wrapper import make_geniusweb_negotiator
 from .agent007.agent007 import Agent007
 from .agent4410.agent_4410 import Agent4410
 from .agentfish.agentfish import AgentFish
-from .AgentFO2.AgentFO2 import AgentFO2
-from .BIU_agent.BIU_agent import BIU_agent
+from .agent_fo2.AgentFO2 import AgentFO2
+from .biu_agent.BIU_agent import BIU_agent as BIUAgent
 from .charging_boul.charging_boul import ChargingBoul
 from .compromising_agent.compromising_agent import CompromisingAgent
 from .dreamteam109_agent.dreamteam109_agent import DreamTeam109Agent
 from .gea_agent.gea_agent import GEAAgent
 from .learning_agent.learning_agent import LearningAgent
-from .LuckyAgent2022.LuckyAgent2022 import LuckyAgent2022
+from .lucky_agent_2022.LuckyAgent2022 import LuckyAgent2022
 from .micro_agent.micro_agent.micro_agent import MiCROAgent
 from .procrastin_agent.procrastin_agent import ProcrastinAgent
 from .rg_agent.rg_agent import RGAgent
@@ -31,13 +31,13 @@ from .super_agent.super_agent import SuperAgent
 from .thirdagent.third_agent import ThirdAgent
 from .tjaronchery10_agent.tjaronchery10_agent import Tjaronchery10Agent
 
-# Pinar_Agent requires lightgbm - make it optional
+# PinarAgent requires lightgbm - make it optional
 try:
-    from .Pinar_Agent.Pinar_Agent import Pinar_Agent
+    from .pinar_agent.Pinar_Agent import Pinar_Agent as PinarAgent
 
     PINAR_AGENT_AVAILABLE = True
 except ImportError:
-    Pinar_Agent = None  # type: ignore[misc, assignment]
+    PinarAgent = None  # type: ignore[misc, assignment]
     PINAR_AGENT_AVAILABLE = False
 
 # Dictionary of raw GeniusWeb party classes
@@ -47,7 +47,7 @@ AGENTS: dict[str, Any] = {
     "Agent4410": Agent4410,
     "AgentFish": AgentFish,
     "AgentFO2": AgentFO2,
-    "BIU_agent": BIU_agent,  # NOTE: may timeout >60 secs on some domains
+    "BIUAgent": BIUAgent,  # NOTE: may timeout >60 secs on some domains
     "ChargingBoul": ChargingBoul,
     "CompromisingAgent": CompromisingAgent,  # NOTE: may cause Action cannot be None errors
     "DreamTeam109Agent": DreamTeam109Agent,
@@ -63,18 +63,18 @@ AGENTS: dict[str, Any] = {
     "Tjaronchery10Agent": Tjaronchery10Agent,
 }
 
-# Add Pinar_Agent if available
+# Add PinarAgent if available
 if PINAR_AGENT_AVAILABLE:
-    AGENTS["Pinar_Agent"] = Pinar_Agent
+    AGENTS["PinarAgent"] = PinarAgent
 
 # Agent metadata with notes about known issues
 AGENT_NOTES: dict[str, str] = {
-    "BIU_agent": "May timeout >60 secs on some domains",
+    "BIUAgent": "May timeout >60 secs on some domains",
     "CompromisingAgent": "May cause 'Action cannot be None' errors",
     "GEAAgent": "Slow execution, ~1.5sec per turn",
     "LearningAgent": "May cause 'Action cannot be None' errors",
     "ProcrastinAgent": "May have issues handling first offer accepted",
-    "Pinar_Agent": "Requires lightgbm package",
+    "PinarAgent": "Requires lightgbm package",
 }
 
 # Create GW-prefixed wrapped negotiator classes
@@ -82,7 +82,7 @@ GWAgent007 = make_geniusweb_negotiator(Agent007)
 GWAgent4410 = make_geniusweb_negotiator(Agent4410)
 GWAgentFish = make_geniusweb_negotiator(AgentFish)
 GWAgentFO2 = make_geniusweb_negotiator(AgentFO2)
-GWBIU_agent = make_geniusweb_negotiator(BIU_agent)
+GWBIUAgent = make_geniusweb_negotiator(BIUAgent)
 GWChargingBoul = make_geniusweb_negotiator(ChargingBoul)
 GWCompromisingAgent = make_geniusweb_negotiator(CompromisingAgent)
 GWDreamTeam109Agent = make_geniusweb_negotiator(DreamTeam109Agent)
@@ -103,7 +103,7 @@ WRAPPED_AGENTS: dict[str, Any] = {
     "GWAgent4410": GWAgent4410,
     "GWAgentFish": GWAgentFish,
     "GWAgentFO2": GWAgentFO2,
-    "GWBIU_agent": GWBIU_agent,
+    "GWBIUAgent": GWBIUAgent,
     "GWChargingBoul": GWChargingBoul,
     "GWCompromisingAgent": GWCompromisingAgent,
     "GWDreamTeam109Agent": GWDreamTeam109Agent,
@@ -119,12 +119,12 @@ WRAPPED_AGENTS: dict[str, Any] = {
     "GWTjaronchery10Agent": GWTjaronchery10Agent,
 }
 
-# Add GWPinar_Agent if available
+# Add GWPinarAgent if available
 if PINAR_AGENT_AVAILABLE:
-    GWPinar_Agent = make_geniusweb_negotiator(Pinar_Agent)
-    WRAPPED_AGENTS["GWPinar_Agent"] = GWPinar_Agent
+    GWPinarAgent = make_geniusweb_negotiator(PinarAgent)
+    WRAPPED_AGENTS["GWPinarAgent"] = GWPinarAgent
 else:
-    GWPinar_Agent = None  # type: ignore[misc, assignment]
+    GWPinarAgent = None  # type: ignore[misc, assignment]
 
 __all__ = [
     # Availability flags
@@ -134,7 +134,7 @@ __all__ = [
     "Agent4410",
     "AgentFish",
     "AgentFO2",
-    "BIU_agent",
+    "BIUAgent",
     "ChargingBoul",
     "CompromisingAgent",
     "DreamTeam109Agent",
@@ -142,7 +142,7 @@ __all__ = [
     "LearningAgent",
     "LuckyAgent2022",
     "MiCROAgent",
-    "Pinar_Agent",
+    "PinarAgent",
     "ProcrastinAgent",
     "RGAgent",
     "SmartAgent",
@@ -154,7 +154,7 @@ __all__ = [
     "GWAgent4410",
     "GWAgentFish",
     "GWAgentFO2",
-    "GWBIU_agent",
+    "GWBIUAgent",
     "GWChargingBoul",
     "GWCompromisingAgent",
     "GWDreamTeam109Agent",
@@ -162,7 +162,7 @@ __all__ = [
     "GWLearningAgent",
     "GWLuckyAgent2022",
     "GWMiCROAgent",
-    "GWPinar_Agent",
+    "GWPinarAgent",
     "GWProcrastinAgent",
     "GWRGAgent",
     "GWSmartAgent",

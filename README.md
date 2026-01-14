@@ -12,7 +12,7 @@ This project builds upon the official GeniusWeb framework. For the original impl
 
 The official repositories contain:
 - Complete GeniusWeb framework implementation (Java and Python)
-- Competition agents from ANAC 2020-2022
+- Competition agents from ANAC 2020-2023
 - Documentation and examples
 
 ## AI-Assisted Development Disclaimer
@@ -20,7 +20,7 @@ The official repositories contain:
 **Important Notice**: Parts of this project were developed with AI assistance:
 
 - **GeniusWeb-to-NegMAS Wrapper** (`wrapper.py`): The bridge wrapper that enables GeniusWeb agents to run in NegMAS mechanisms was developed in part using AI assistance.
-- **Java-to-Python Translations**: The negotiation agents in the `anac2020/`, `anac2021/`, and `ai2020/` directories were translated from their original Java implementations to Python using AI. These translations aim to preserve the original algorithms and strategies but may contain differences from the original implementations.
+- **Java-to-Python Translations**: The negotiation agents in the `anac2020/` and `anac2021/` directories were translated from their original Java implementations to Python using AI. These translations aim to preserve the original algorithms and strategies but may contain differences from the original implementations.
 
 The original Python agents (in `basic/`, `anl2022/`, `anl2023/`, `cse3210/`) were written directly in Python by their original authors and are not AI-translated.
 
@@ -48,8 +48,7 @@ from negmas import SAOMechanism, make_issue
 from negmas.preferences import LinearAdditiveUtilityFunction
 from negmas.sao import AspirationNegotiator
 
-from negmas_geniusweb_bridge.wrapper import GeniusWebNegotiator
-from negmas_geniusweb_bridge.basic.boulware_agent.boulware_agent import BoulwareAgent
+from negmas_geniusweb_bridge import GWBoulwareAgent
 
 # Define the negotiation issues
 issues = [make_issue(5, "price"), make_issue(3, "quality")]
@@ -62,11 +61,7 @@ ufun_b = LinearAdditiveUtilityFunction.random(issues=issues, normalized=True)
 mechanism = SAOMechanism(issues=issues, n_steps=50)
 
 # Create a GeniusWeb agent (Boulware strategy)
-gw_agent = GeniusWebNegotiator(
-    party_class=BoulwareAgent,
-    ufun=ufun_a,
-    name="geniusweb_boulware",
-)
+gw_agent = GWBoulwareAgent(ufun=ufun_a, name="geniusweb_boulware")
 
 # Create a NegMAS agent (Aspiration strategy)
 negmas_agent = AspirationNegotiator(ufun=ufun_b, name="aspiration")
@@ -92,9 +87,7 @@ Run a negotiation between two GeniusWeb agents:
 from negmas import SAOMechanism, make_issue
 from negmas.preferences import LinearAdditiveUtilityFunction
 
-from negmas_geniusweb_bridge.wrapper import GeniusWebNegotiator
-from negmas_geniusweb_bridge.basic.boulware_agent.boulware_agent import BoulwareAgent
-from negmas_geniusweb_bridge.basic.conceder_agent.conceder_agent import ConcederAgent
+from negmas_geniusweb_bridge import GWBoulwareAgent, GWConcederAgent
 
 issues = [make_issue(10, "price"), make_issue(5, "quality"), make_issue(3, "delivery")]
 
@@ -104,18 +97,10 @@ ufun_b = LinearAdditiveUtilityFunction.random(issues=issues, normalized=True)
 mechanism = SAOMechanism(issues=issues, n_steps=100)
 
 # Boulware agent (reluctant to concede)
-agent_a = GeniusWebNegotiator(
-    party_class=BoulwareAgent,
-    ufun=ufun_a,
-    name="boulware",
-)
+agent_a = GWBoulwareAgent(ufun=ufun_a, name="boulware")
 
 # Conceder agent (willing to concede quickly)
-agent_b = GeniusWebNegotiator(
-    party_class=ConcederAgent,
-    ufun=ufun_b,
-    name="conceder",
-)
+agent_b = GWConcederAgent(ufun=ufun_b, name="conceder")
 
 mechanism.add(agent_a)
 mechanism.add(agent_b)
@@ -141,7 +126,7 @@ negotiator = BoulwareNegotiator(ufun=my_ufun, name="boulware1")
 
 ## Available Agents
 
-The bridge includes **80+ agents** from several GeniusWeb competitions. Each module exports:
+The bridge includes **82+ agents** from several GeniusWeb competitions. Each module exports:
 - `AGENTS`: Dictionary of raw GeniusWeb party classes
 - `WRAPPED_AGENTS`: Dictionary of NegMAS-wrapped negotiator classes (GW-prefixed)
 - `AGENT_NOTES`: Known issues/notes about specific agents
@@ -152,10 +137,11 @@ The bridge includes **80+ agents** from several GeniusWeb competitions. Each mod
 |--------|-------|------|-------------|
 | `basic` | 7 | Python Native | Reference implementations (Boulware, Conceder, Linear, etc.) |
 | `anac2020` | 13 | AI-Translated | ANAC 2020 competition agents (from Java) |
-| `anl2022` | 19 | Python Native | Automated Negotiation League 2022 |
-| `anl2023` | 16 | Python Native | Automated Negotiation League 2023 |
+| `anac2021` | 6 | AI-Translated | ANAC 2021 competition agents (from Java) |
+| `anl2022` | 18 | Python Native | Automated Negotiation League 2022 |
+| `anl2023` | 14 | Python Native | Automated Negotiation League 2023 |
 | `cse3210` | 25 | Python Native | TU Delft CSE3210 course agents |
-| **Total** | **80** | | |
+| **Total** | **82** | | |
 
 ### Basic Agents (7)
 
@@ -191,7 +177,20 @@ Agents from the Automated Negotiating Agents Competition 2020. These were transl
 | `NiceAgent` | SHAOP/SAOP | Elicitation with mirroring strategy |
 | `ShineAgent` | SAOP | Adaptive agent with dynamic strategy |
 
-### ANL 2022 Agents (19) - Python Native
+### ANAC 2021 Agents (6) - AI-Translated from Java
+
+Agents from the Automated Negotiating Agents Competition 2021. These were translated from Java using AI assistance.
+
+| Agent | Protocol | Description |
+|-------|----------|-------------|
+| `AgentFO2021` | SAOP | Learning-based agent with time-dependent concession |
+| `AlphaBIU` | SAOP | Frequency-based opponent modeling with two-phase strategy |
+| `GamblerAgent` | SAOP | UCB Multi-Armed Bandit selecting among sub-agents |
+| `MatrixAlienAgent` | SAOP | Adaptive boulware-style with multi-factor bid scoring |
+| `TheDiceHaggler2021` | SAOP | Multi-phase strategy with Pareto estimation and TOPSIS |
+| `TripleAgent` | SAOP | Frequency model and utility space analysis |
+
+### ANL 2022 Agents (18) - Python Native
 
 Agents from the Automated Negotiation League 2022. Written in Python by their original authors.
 
@@ -201,7 +200,7 @@ Agents from the Automated Negotiation League 2022. Written in Python by their or
 | `Agent4410` | |
 | `AgentFish` | |
 | `AgentFO2` | |
-| `BIU_agent` | May timeout >60 secs on some domains |
+| `BIUAgent` | May timeout >60 secs on some domains |
 | `ChargingBoul` | |
 | `CompromisingAgent` | May cause "Action cannot be None" errors |
 | `DreamTeam109Agent` | |
@@ -209,7 +208,7 @@ Agents from the Automated Negotiation League 2022. Written in Python by their or
 | `LearningAgent` | May cause "Action cannot be None" errors |
 | `LuckyAgent2022` | |
 | `MiCROAgent` | |
-| `Pinar_Agent` | Requires `lightgbm` package (optional) |
+| `PinarAgent` | Requires `lightgbm` package (optional) |
 | `ProcrastinAgent` | May have issues with first offer accepted |
 | `RGAgent` | |
 | `SmartAgent` | |
@@ -217,7 +216,7 @@ Agents from the Automated Negotiation League 2022. Written in Python by their or
 | `ThirdAgent` | |
 | `Tjaronchery10Agent` | |
 
-### ANL 2023 Agents (16) - Python Native
+### ANL 2023 Agents (14) - Python Native
 
 Agents from the Automated Negotiation League 2023. Written in Python by their original authors.
 
@@ -229,13 +228,13 @@ Agents from the Automated Negotiation League 2023. Written in Python by their or
 | `AntHeartAgent` | |
 | `ColmanAnacondotAgent2` | |
 | `ExploitAgent` | |
-| `GOTAgent` | |
+| `GotAgent` | |
 | `HybridAgent2023` | |
 | `KBTimeDiffAgent` | |
-| `Micro2023` | |
+| `MiCRO2023` | |
 | `MSCAgent` | Requires `gym`, `torch`, `stable-baselines3` (optional) |
 | `PopularAgent` | |
-| `SmartAgent2023` | |
+| `SmartAgent` | |
 | `SpaghettiAgent` | |
 | `TripleEAgent` | |
 
@@ -254,16 +253,20 @@ Agents from the TU Delft CSE3210 Negotiation course. Written in Python by studen
 ```python
 # Import all agents from a module
 from negmas_geniusweb_bridge.anac2020 import AGENTS, WRAPPED_AGENTS, AGENT_METADATA
+from negmas_geniusweb_bridge.anac2021 import AGENTS, WRAPPED_AGENTS, AGENT_NOTES
 from negmas_geniusweb_bridge.anl2022 import AGENTS, WRAPPED_AGENTS, AGENT_NOTES
 from negmas_geniusweb_bridge.anl2023 import AGENTS, WRAPPED_AGENTS
 from negmas_geniusweb_bridge.cse3210 import AGENTS, WRAPPED_AGENTS
 from negmas_geniusweb_bridge.basic import AGENTS, WRAPPED_AGENTS
 
+# Import all wrapped agents at once
+from negmas_geniusweb_bridge import ALL_AGENTS
+
 # List all available agents
-print(list(AGENTS.keys()))
+print(list(ALL_AGENTS.keys()))
 
 # Use a wrapped agent directly
-from negmas_geniusweb_bridge.anac2020 import GWHammingAgent
+from negmas_geniusweb_bridge import GWHammingAgent, GWBoulwareAgent
 agent = GWHammingAgent(name="my_agent")
 ```
 
@@ -271,10 +274,10 @@ agent = GWHammingAgent(name="my_agent")
 
 ```bash
 # Run all tests
-uv run pytest
+python -m pytest
 
 # Run a specific test
-uv run pytest tests/test_negmas_wrapper.py::TestNegotiationRuns::test_geniusweb_vs_geniusweb -v
+python -m pytest tests/test_negmas_wrapper.py::TestNegotiationRuns::test_geniusweb_vs_geniusweb -v
 ```
 
 ## License

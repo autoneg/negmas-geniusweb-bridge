@@ -43,6 +43,7 @@ from .anl2023 import AGENTS as ANL2023_AGENTS, WRAPPED_AGENTS as ANL2023_WRAPPED
 from .basic import AGENTS as BASIC_AGENTS, WRAPPED_AGENTS as BASIC_WRAPPED
 from .cse3210 import AGENTS as CSE3210_AGENTS, WRAPPED_AGENTS as CSE3210_WRAPPED
 from .anac2020 import AGENTS as ANAC2020_AGENTS, WRAPPED_AGENTS as ANAC2020_WRAPPED
+from .anac2021 import AGENTS as ANAC2021_AGENTS, WRAPPED_AGENTS as ANAC2021_WRAPPED
 
 # Import individual wrapped classes for direct use
 from .anac2020 import GWHammingAgent, GWShineAgent
@@ -67,6 +68,7 @@ ALL_AGENTS.update(ANL2022_WRAPPED)
 ALL_AGENTS.update(ANL2023_WRAPPED)
 ALL_AGENTS.update(CSE3210_WRAPPED)
 ALL_AGENTS.update(ANAC2020_WRAPPED)
+ALL_AGENTS.update(ANAC2021_WRAPPED)
 
 TRAINING_AGENTS = ALL_AGENTS.copy()
 TESTING_AGENTS = ALL_AGENTS.copy()
@@ -95,6 +97,16 @@ def _register_agents() -> None:
             bilateral_only=True,
             anac_year=2020,
             tags={"geniusweb", "anac2020", "ai-translated"},
+        )
+
+    # ANAC 2021 agents - AI-translated from Java
+    for name, agent_cls in ANAC2021_WRAPPED.items():
+        register_negotiator(
+            agent_cls,
+            short_name=name,
+            bilateral_only=True,
+            anac_year=2021,
+            tags={"geniusweb", "anac2021", "ai-translated"},
         )
 
     # ANL 2022 agents - Python native
@@ -162,4 +174,6 @@ __all__ = [
     "CSE3210_WRAPPED",
     "ANAC2020_AGENTS",
     "ANAC2020_WRAPPED",
+    "ANAC2021_AGENTS",
+    "ANAC2021_WRAPPED",
 ]

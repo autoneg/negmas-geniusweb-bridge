@@ -17,12 +17,14 @@ from .colman_anacondot_agent2.colman_anacondot_agent2 import ColmanAnacondotAgen
 from .exploit_agent.exploit_agent import ExploitAgent
 from .got_agent.got_agent import GotAgent
 from .hybrid_agent2023.HybridAgent2023 import HybridAgent2023
-from .kb_time_diff_agent.kb_time_diff_agent import KB_time_diff_Agent
+
+# KB_time_diff_Agent renamed to KBTimeDiffAgent for Pythonic naming
+from .kb_time_diff_agent.kb_time_diff_agent import KB_time_diff_Agent as KBTimeDiffAgent
 from .micro_2023.micro_2023 import MiCRO2023
 from .popular_agent.popular_agent import PopularAgent
 from .smart_agent.smart_agent import SmartAgent
 from .spaghetti_agent.spaghetti_agent import Agent37 as SpaghettiAgent
-from .TripleE_agent.TripleE_agent import TripleE as TripleEAgent
+from .triple_e_agent.TripleE_agent import TripleE as TripleEAgent
 
 # MSCAgent requires gym, torch, stable-baselines3 - make it optional
 try:
@@ -43,7 +45,7 @@ AGENTS: dict[str, Any] = {
     "ExploitAgent": ExploitAgent,
     "GotAgent": GotAgent,
     "HybridAgent2023": HybridAgent2023,
-    "KBTimeDiffAgent": KB_time_diff_Agent,
+    "KBTimeDiffAgent": KBTimeDiffAgent,
     "MiCRO2023": MiCRO2023,
     "PopularAgent": PopularAgent,
     "SmartAgent": SmartAgent,
@@ -64,7 +66,7 @@ GWColmanAnacondotAgent2 = make_geniusweb_negotiator(ColmanAnacondotAgent2)
 GWExploitAgent = make_geniusweb_negotiator(ExploitAgent)
 GWGotAgent = make_geniusweb_negotiator(GotAgent)
 GWHybridAgent2023 = make_geniusweb_negotiator(HybridAgent2023)
-GWKBTimeDiffAgent = make_geniusweb_negotiator(KB_time_diff_Agent)
+GWKBTimeDiffAgent = make_geniusweb_negotiator(KBTimeDiffAgent)
 GWMiCRO2023 = make_geniusweb_negotiator(MiCRO2023)
 GWPopularAgent = make_geniusweb_negotiator(PopularAgent)
 GWSmartAgent = make_geniusweb_negotiator(SmartAgent)
@@ -108,7 +110,7 @@ __all__ = [
     "ExploitAgent",
     "GotAgent",
     "HybridAgent2023",
-    "KB_time_diff_Agent",
+    "KBTimeDiffAgent",
     "MiCRO2023",
     "MSCAgent",
     "PopularAgent",

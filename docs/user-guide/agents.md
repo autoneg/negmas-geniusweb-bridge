@@ -13,8 +13,9 @@ This page lists all 80+ negotiation agents available through the negmas-geniuswe
 |--------|-------|------|-------------|
 | `basic` | 7 | Python Native | Reference implementations |
 | `anac2020` | 13 | AI-Translated | ANAC 2020 competition (from Java) |
-| `anl2022` | 19 | Python Native | ANL 2022 competition |
-| `anl2023` | 16 | Python Native | ANL 2023 competition |
+| `anac2021` | 6 | AI-Translated | ANAC 2021 competition (from Java) |
+| `anl2022` | 18 | Python Native | ANL 2022 competition |
+| `anl2023` | 14 | Python Native | ANL 2023 competition |
 | `cse3210` | 25 | Python Native | TU Delft course agents |
 
 ---
@@ -60,7 +61,25 @@ Agents from the Automated Negotiating Agents Competition 2020.
 
 ---
 
-## ANL 2022 Agents (19) - Python Native
+## ANAC 2021 Agents (6) - AI-Translated from Java
+
+Agents from the Automated Negotiating Agents Competition 2021.
+
+!!! warning "AI-Translated"
+    These agents were translated from Java using AI assistance. They may contain differences from the original implementations.
+
+| Agent | Wrapped Name | Description |
+|-------|--------------|-------------|
+| `AgentFO2021` | `GWAgentFO2021` | Learning-based agent with time-dependent concession |
+| `AlphaBIU` | `GWAlphaBIU` | Frequency-based opponent modeling with two-phase strategy |
+| `GamblerAgent` | `GWGamblerAgent` | UCB Multi-Armed Bandit selecting among sub-agents |
+| `MatrixAlienAgent` | `GWMatrixAlienAgent` | Adaptive boulware-style agent with multi-factor scoring |
+| `TheDiceHaggler2021` | `GWTheDiceHaggler2021` | Multi-phase time-dependent strategy with TOPSIS |
+| `TripleAgent` | `GWTripleAgent` | Frequency model and utility space analysis |
+
+---
+
+## ANL 2022 Agents (18) - Python Native
 
 Agents from the Automated Negotiation League 2022.
 
@@ -70,7 +89,7 @@ Agents from the Automated Negotiation League 2022.
 | `Agent4410` | `GWAgent4410` | |
 | `AgentFish` | `GWAgentFish` | |
 | `AgentFO2` | `GWAgentFO2` | |
-| `BIU_agent` | `GWBIU_agent` | May timeout >60 secs |
+| `BIUAgent` | `GWBIUAgent` | May timeout >60 secs |
 | `ChargingBoul` | `GWChargingBoul` | |
 | `CompromisingAgent` | `GWCompromisingAgent` | May cause "Action cannot be None" |
 | `DreamTeam109Agent` | `GWDreamTeam109Agent` | |
@@ -78,7 +97,7 @@ Agents from the Automated Negotiation League 2022.
 | `LearningAgent` | `GWLearningAgent` | May cause "Action cannot be None" |
 | `LuckyAgent2022` | `GWLuckyAgent2022` | |
 | `MiCROAgent` | `GWMiCROAgent` | |
-| `Pinar_Agent` | `GWPinar_Agent` | Requires `lightgbm` (optional) |
+| `PinarAgent` | `GWPinarAgent` | Requires `lightgbm` (optional) |
 | `ProcrastinAgent` | `GWProcrastinAgent` | Issues with first offer |
 | `RGAgent` | `GWRGAgent` | |
 | `SmartAgent` | `GWSmartAgent` | |
@@ -88,7 +107,7 @@ Agents from the Automated Negotiation League 2022.
 
 ---
 
-## ANL 2023 Agents (16) - Python Native
+## ANL 2023 Agents (14) - Python Native
 
 Agents from the Automated Negotiation League 2023.
 
@@ -100,13 +119,13 @@ Agents from the Automated Negotiation League 2023.
 | `AntHeartAgent` | `GWAntHeartAgent` | |
 | `ColmanAnacondotAgent2` | `GWColmanAnacondotAgent2` | |
 | `ExploitAgent` | `GWExploitAgent` | |
-| `GOTAgent` | `GWGOTAgent` | |
+| `GotAgent` | `GWGotAgent` | |
 | `HybridAgent2023` | `GWHybridAgent2023` | |
 | `KBTimeDiffAgent` | `GWKBTimeDiffAgent` | |
-| `Micro2023` | `GWMicro2023` | |
+| `MiCRO2023` | `GWMiCRO2023` | |
 | `MSCAgent` | `GWMSCAgent` | Requires `gym`, `torch`, `stable-baselines3` (optional) |
 | `PopularAgent` | `GWPopularAgent` | |
-| `SmartAgent2023` | `GWSmartAgent2023` | |
+| `SmartAgent` | `GWSmartAgent` | |
 | `SpaghettiAgent` | `GWSpaghettiAgent` | |
 | `TripleEAgent` | `GWTripleEAgent` | |
 
@@ -197,13 +216,13 @@ negotiator = BoulwareNegotiator(ufun=my_ufun, name="boulware1")
 ### Checking Optional Agent Availability
 
 ```python
-from negmas_geniusweb_bridge.anl2022 import PINAR_AGENT_AVAILABLE, Pinar_Agent
+from negmas_geniusweb_bridge.anl2022 import PINAR_AGENT_AVAILABLE, PinarAgent
 from negmas_geniusweb_bridge.anl2023 import MSC_AGENT_AVAILABLE, MSCAgent
 
 if PINAR_AGENT_AVAILABLE:
-    print("Pinar_Agent is available (lightgbm installed)")
+    print("PinarAgent is available (lightgbm installed)")
 else:
-    print("Pinar_Agent not available (install lightgbm)")
+    print("PinarAgent not available (install lightgbm)")
 
 if MSC_AGENT_AVAILABLE:
     print("MSCAgent is available (gym/torch/stable-baselines3 installed)")

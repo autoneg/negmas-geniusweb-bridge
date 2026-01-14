@@ -268,7 +268,12 @@ if GENIUS_WEB_AVAILABLE:
                 json.dump(profile_dict, f)
 
             # Create the party instance
-            self._party = self._party_class(_DummyReporter())
+            # Try with reporter argument first, then without (for ANL2023 agents)
+            try:
+                self._party = self._party_class(_DummyReporter())
+            except TypeError:
+                # Agent doesn't accept reporter argument (e.g., ANL2023 agents)
+                self._party = self._party_class()
 
             # Set up the dummy connection (works because we use it as a duck-typed interface)
             self._party._connection = self._connection  # type: ignore[assignment]

@@ -14,31 +14,55 @@ This project builds upon the official GeniusWeb framework. For the original impl
 - **GeniusWeb (Python)**: [https://gitlab.ewi.tudelft.nl/interactive-intelligence/geniusweb/geniuswebpython](https://gitlab.ewi.tudelft.nl/interactive-intelligence/geniusweb/geniuswebpython)
 - **GeniusWeb Project Home**: [https://gitlab.ewi.tudelft.nl/interactive-intelligence/geniusweb](https://gitlab.ewi.tudelft.nl/interactive-intelligence/geniusweb)
 
-The official repositories contain the complete GeniusWeb framework implementation (Java and Python), competition agents from ANAC 2020-2022, and documentation.
+The official repositories contain the complete GeniusWeb framework implementation (Java and Python), competition agents from ANAC 2020-2023, and documentation.
 
 ## Features
 
+- **84+ negotiation agents** from ANAC/ANL competitions (2020-2023) and TU Delft courses
 - Run GeniusWeb agents in NegMAS negotiation mechanisms
 - Mix GeniusWeb and native NegMAS agents in the same negotiation
-- Use agents from ANAC competitions (2020, 2021, 2022, 2023)
-- Access to numerous pre-implemented negotiation strategies
+- Simple GW-prefixed wrapper classes for easy integration
+- Comprehensive metadata and notes for each agent
 
 ## Quick Start
 
 ```python
-from negmas import SAOMechanism, make_issue, make_os
-from negmas_geniusweb_bridge import GWHammingAgent
+from negmas import SAOMechanism, make_issue
+from negmas.preferences import LinearAdditiveUtilityFunction
+from negmas.sao import AspirationNegotiator
+
+from negmas_geniusweb_bridge import GWBoulwareAgent
 
 # Create a negotiation scenario
 issues = [make_issue(name="price", values=10), make_issue(name="quantity", values=5)]
-mechanism = SAOMechanism(outcome_space=make_os(issues), n_steps=100)
+ufun_a = LinearAdditiveUtilityFunction.random(issues=issues, normalized=True)
+ufun_b = LinearAdditiveUtilityFunction.random(issues=issues, normalized=True)
+
+mechanism = SAOMechanism(issues=issues, n_steps=100)
 
 # Add a wrapped GeniusWeb agent
-mechanism.add(GWHammingAgent(name="gw_agent"))
+mechanism.add(GWBoulwareAgent(ufun=ufun_a, name="gw_agent"))
+
+# Add a NegMAS agent
+mechanism.add(AspirationNegotiator(ufun=ufun_b, name="negmas_agent"))
 
 # Run the negotiation
 mechanism.run()
+
+print(f"Agreement: {mechanism.state.agreement}")
 ```
+
+## Agent Summary
+
+| Module | Count | Type | Description |
+|--------|-------|------|-------------|
+| `basic` | 7 | Python Native | Reference implementations |
+| `anac2020` | 13 | AI-Translated | ANAC 2020 competition (from Java) |
+| `anac2021` | 6 | AI-Translated | ANAC 2021 competition (from Java) |
+| `anl2022` | 19 | Python Native | ANL 2022 competition |
+| `anl2023` | 14 | Python Native | ANL 2023 competition |
+| `cse3210` | 25 | Python Native | TU Delft course agents |
+| **Total** | **84** | | |
 
 ## Installation
 
@@ -59,6 +83,13 @@ uv add negmas-geniusweb-bridge
 - [API Reference](api/wrappers.md) - Detailed API documentation
 - [Development](development/contributing.md) - Contributing guidelines
 
+## AI-Assisted Development Disclaimer
+
+!!! warning "AI-Translated Code"
+    The agents in `anac2020/` and `anac2021/` directories were translated from Java to Python using AI assistance. These translations aim to preserve the original algorithms but may contain differences from the original implementations.
+
+The original Python agents (in `basic/`, `anl2022/`, `anl2023/`, `cse3210/`) were written directly in Python by their original authors and are not AI-translated.
+
 ## License
 
-MIT License - see [LICENSE](https://github.com/yasserfarouk/negmas-geniusweb-bridge/blob/main/LICENSE) for details.
+This software is licensed for academic, research, and non-commercial use only. See [LICENSE](https://github.com/yasserfarouk/negmas-geniusweb-bridge/blob/main/LICENSE) for details.

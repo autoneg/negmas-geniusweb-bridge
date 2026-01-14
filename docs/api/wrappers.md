@@ -9,55 +9,34 @@ The main wrapper class that adapts GeniusWeb `DefaultParty` agents to work as Ne
 ::: negmas_geniusweb_bridge.wrapper.GeniusWebNegotiator
     options:
       show_source: true
-      members:
-        - __init__
-        - propose
-        - respond
-        - on_partner_proposal
-        - on_partner_response
 
-## Helper Functions
+## Factory Function
 
-### ufun_to_geniusweb
+### make_geniusweb_negotiator
 
-Convert a NegMAS utility function to a GeniusWeb `LinearAdditive` utility space.
+Create a reusable NegMAS-compatible negotiator class from a GeniusWeb party class.
 
-::: negmas_geniusweb_bridge.wrapper.ufun_to_geniusweb
-
-### outcome_to_bid
-
-Convert a NegMAS outcome to a GeniusWeb `Bid`.
-
-::: negmas_geniusweb_bridge.wrapper.outcome_to_bid
-
-### bid_to_outcome
-
-Convert a GeniusWeb `Bid` to a NegMAS outcome.
-
-::: negmas_geniusweb_bridge.wrapper.bid_to_outcome
+::: negmas_geniusweb_bridge.wrapper.make_geniusweb_negotiator
 
 ## Usage Example
 
 ```python
-from negmas import SAOMechanism
+from negmas import SAOMechanism, make_issue
 from negmas.preferences import LinearAdditiveUtilityFunction
-from negmas_geniusweb_bridge import GeniusWebNegotiator
-from negmas_geniusweb_bridge.basic.random_agent import RandomAgent
+from negmas_geniusweb_bridge import GWBoulwareAgent
+from negmas_geniusweb_bridge.wrapper import make_geniusweb_negotiator
+from negmas_geniusweb_bridge.basic import RandomAgent
 
-# Create a mechanism
-mechanism = SAOMechanism(
-    issues=issues,
-    n_steps=100
-)
+# Option 1: Use pre-wrapped agents directly
+issues = [make_issue(5, "price"), make_issue(3, "quality")]
+ufun = LinearAdditiveUtilityFunction.random(issues=issues, normalized=True)
 
-# Create a GeniusWeb agent wrapped for NegMAS
-negotiator = GeniusWebNegotiator(
-    geniusweb_agent_class=RandomAgent,
-    name="random_agent"
-)
+mechanism = SAOMechanism(issues=issues, n_steps=100)
+mechanism.add(GWBoulwareAgent(ufun=ufun, name="boulware"))
 
-# Add to mechanism with utility function
-mechanism.add(negotiator, ufun=my_ufun)
+# Option 2: Create your own wrapped negotiator class
+GWRandomAgent = make_geniusweb_negotiator(RandomAgent)
+mechanism.add(GWRandomAgent(ufun=ufun, name="random"))
 
 # Run the negotiation
 mechanism.run()
