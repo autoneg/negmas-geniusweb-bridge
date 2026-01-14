@@ -48,7 +48,7 @@ from negmas import SAOMechanism, make_issue
 from negmas.preferences import LinearAdditiveUtilityFunction
 from negmas.sao import AspirationNegotiator
 
-from negmas_geniusweb_bridge import GWBoulwareAgent
+from negmas_geniusweb_bridge import BoulwareAgent
 
 # Define the negotiation issues
 issues = [make_issue(5, "price"), make_issue(3, "quality")]
@@ -61,7 +61,7 @@ ufun_b = LinearAdditiveUtilityFunction.random(issues=issues, normalized=True)
 mechanism = SAOMechanism(issues=issues, n_steps=50)
 
 # Create a GeniusWeb agent (Boulware strategy)
-gw_agent = GWBoulwareAgent(ufun=ufun_a, name="geniusweb_boulware")
+gw_agent = BoulwareAgent(ufun=ufun_a, name="geniusweb_boulware")
 
 # Create a NegMAS agent (Aspiration strategy)
 negmas_agent = AspirationNegotiator(ufun=ufun_b, name="aspiration")
@@ -87,7 +87,7 @@ Run a negotiation between two GeniusWeb agents:
 from negmas import SAOMechanism, make_issue
 from negmas.preferences import LinearAdditiveUtilityFunction
 
-from negmas_geniusweb_bridge import GWBoulwareAgent, GWConcederAgent
+from negmas_geniusweb_bridge import BoulwareAgent, ConcederAgent
 
 issues = [make_issue(10, "price"), make_issue(5, "quality"), make_issue(3, "delivery")]
 
@@ -97,10 +97,10 @@ ufun_b = LinearAdditiveUtilityFunction.random(issues=issues, normalized=True)
 mechanism = SAOMechanism(issues=issues, n_steps=100)
 
 # Boulware agent (reluctant to concede)
-agent_a = GWBoulwareAgent(ufun=ufun_a, name="boulware")
+agent_a = BoulwareAgent(ufun=ufun_a, name="boulware")
 
 # Conceder agent (willing to concede quickly)
-agent_b = GWConcederAgent(ufun=ufun_b, name="conceder")
+agent_b = ConcederAgent(ufun=ufun_b, name="conceder")
 
 mechanism.add(agent_a)
 mechanism.add(agent_b)
@@ -266,8 +266,8 @@ from negmas_geniusweb_bridge import ALL_AGENTS
 print(list(ALL_AGENTS.keys()))
 
 # Use a wrapped agent directly
-from negmas_geniusweb_bridge import GWHammingAgent, GWBoulwareAgent
-agent = GWHammingAgent(name="my_agent")
+from negmas_geniusweb_bridge import HammingAgent, BoulwareAgent
+agent = HammingAgent(name="my_agent")
 ```
 
 ## Testing

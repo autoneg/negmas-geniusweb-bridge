@@ -8,7 +8,7 @@ One of the key features of negmas-geniusweb-bridge is the ability to mix GeniusW
 from negmas import SAOMechanism, make_issue, make_os
 from negmas.sao import AspirationNegotiator
 from negmas.preferences import LinearAdditiveUtilityFunction as U
-from negmas_geniusweb_bridge import GWHammingAgent
+from negmas_geniusweb_bridge import HammingAgent
 
 # Create scenario
 issues = [
@@ -25,7 +25,7 @@ ufun1 = U.random(outcome_space=outcome_space)
 ufun2 = U.random(outcome_space=outcome_space)
 
 # Mix agents from different frameworks
-mechanism.add(GWHammingAgent(name="geniusweb_agent"), ufun=ufun1)
+mechanism.add(HammingAgent(name="geniusweb_agent"), ufun=ufun1)
 mechanism.add(AspirationNegotiator(name="negmas_agent"), ufun=ufun2)
 
 # Run
@@ -41,7 +41,7 @@ You can mix multiple agents from both frameworks:
 from negmas import SAOMechanism, make_issue, make_os
 from negmas.sao import AspirationNegotiator, NaiveTitForTatNegotiator
 from negmas.preferences import LinearAdditiveUtilityFunction as U
-from negmas_geniusweb_bridge import GWHammingAgent, GWShineAgent
+from negmas_geniusweb_bridge import HammingAgent, ShineAgent
 
 issues = [make_issue(name="x", values=10)]
 outcome_space = make_os(issues)
@@ -50,8 +50,8 @@ mechanism = SAOMechanism(outcome_space=outcome_space, n_steps=100)
 
 # Add agents from both frameworks
 agents = [
-    GWHammingAgent(name="hamming"),
-    GWShineAgent(name="shine"),
+    HammingAgent(name="hamming"),
+    ShineAgent(name="shine"),
     AspirationNegotiator(name="aspiration"),
     NaiveTitForTatNegotiator(name="tft"),
 ]

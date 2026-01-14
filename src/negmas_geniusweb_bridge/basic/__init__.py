@@ -41,23 +41,23 @@ AGENT_NOTES: dict[str, str] = {
 }
 
 # Create GW-prefixed wrapped negotiator classes
-GWBoulwareAgent = make_geniusweb_negotiator(BoulwareAgent)
-GWConcederAgent = make_geniusweb_negotiator(ConcederAgent)
-GWHardlinerAgent = make_geniusweb_negotiator(HardlinerAgent)
-GWLinearAgent = make_geniusweb_negotiator(LinearAgent)
-GWRandomAgent = make_geniusweb_negotiator(RandomAgent)
-GWStupidAgent = make_geniusweb_negotiator(StupidAgent)
-GWTimeDependentAgent = make_geniusweb_negotiator(TimeDependentAgent)
+BoulwareAgent = make_geniusweb_negotiator(BoulwareAgent)
+ConcederAgent = make_geniusweb_negotiator(ConcederAgent)
+HardlinerAgent = make_geniusweb_negotiator(HardlinerAgent)
+LinearAgent = make_geniusweb_negotiator(LinearAgent)
+RandomAgent = make_geniusweb_negotiator(RandomAgent)
+StupidAgent = make_geniusweb_negotiator(StupidAgent)
+TimeDependentAgent = make_geniusweb_negotiator(TimeDependentAgent)
 
 # Dictionary of wrapped negotiator classes
 WRAPPED_AGENTS: dict[str, Any] = {
-    "GWBoulwareAgent": GWBoulwareAgent,
-    "GWConcederAgent": GWConcederAgent,
-    "GWHardlinerAgent": GWHardlinerAgent,
-    "GWLinearAgent": GWLinearAgent,
-    "GWRandomAgent": GWRandomAgent,
-    "GWStupidAgent": GWStupidAgent,
-    "GWTimeDependentAgent": GWTimeDependentAgent,
+    "BoulwareAgent": BoulwareAgent,
+    "ConcederAgent": ConcederAgent,
+    "HardlinerAgent": HardlinerAgent,
+    "LinearAgent": LinearAgent,
+    "RandomAgent": RandomAgent,
+    "StupidAgent": StupidAgent,
+    "TimeDependentAgent": TimeDependentAgent,
 }
 
 __all__ = [
@@ -70,13 +70,13 @@ __all__ = [
     "StupidAgent",
     "TimeDependentAgent",
     # Wrapped agents
-    "GWBoulwareAgent",
-    "GWConcederAgent",
-    "GWHardlinerAgent",
-    "GWLinearAgent",
-    "GWRandomAgent",
-    "GWStupidAgent",
-    "GWTimeDependentAgent",
+    "BoulwareAgent",
+    "ConcederAgent",
+    "HardlinerAgent",
+    "LinearAgent",
+    "RandomAgent",
+    "StupidAgent",
+    "TimeDependentAgent",
     # Dictionaries
     "AGENTS",
     "WRAPPED_AGENTS",

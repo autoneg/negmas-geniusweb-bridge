@@ -2,12 +2,11 @@
 NegMAS-GeniusWeb Bridge.
 
 This module provides wrapped GeniusWeb negotiation agents that can be used
-with NegMAS mechanisms. All wrapped classes are prefixed with "GW" to avoid
-name clashes with the unwrapped GeniusWeb party classes.
+with NegMAS mechanisms.
 
 Example:
-    >>> from negmas_geniusweb_bridge import GWBoulwareAgent
-    >>> negotiator = GWBoulwareAgent(ufun=my_ufun)
+    >>> from negmas_geniusweb_bridge import BoulwareAgent
+    >>> negotiator = BoulwareAgent(ufun=my_ufun)
 """
 
 from typing import Any
@@ -46,15 +45,15 @@ from .anac2020 import AGENTS as ANAC2020_AGENTS, WRAPPED_AGENTS as ANAC2020_WRAP
 from .anac2021 import AGENTS as ANAC2021_AGENTS, WRAPPED_AGENTS as ANAC2021_WRAPPED
 
 # Import individual wrapped classes for direct use
-from .anac2020 import GWHammingAgent, GWShineAgent
+from .anac2020 import HammingAgent, ShineAgent
 from .basic import (
-    GWBoulwareAgent,
-    GWConcederAgent,
-    GWLinearAgent,
-    GWHardlinerAgent,
-    GWRandomAgent,
-    GWStupidAgent,
-    GWTimeDependentAgent,
+    BoulwareAgent,
+    ConcederAgent,
+    LinearAgent,
+    HardlinerAgent,
+    RandomAgent,
+    StupidAgent,
+    TimeDependentAgent,
 )
 
 # Dictionaries for agent management
@@ -153,16 +152,16 @@ __all__ = [
     "TRAINING_AGENTS",
     "TESTING_AGENTS",
     # Individual wrapped agents - Basic
-    "GWBoulwareAgent",
-    "GWConcederAgent",
-    "GWLinearAgent",
-    "GWHardlinerAgent",
-    "GWRandomAgent",
-    "GWStupidAgent",
-    "GWTimeDependentAgent",
+    "BoulwareAgent",
+    "ConcederAgent",
+    "LinearAgent",
+    "HardlinerAgent",
+    "RandomAgent",
+    "StupidAgent",
+    "TimeDependentAgent",
     # Individual wrapped agents - ANAC2020 (AI translated)
-    "GWHammingAgent",
-    "GWShineAgent",
+    "HammingAgent",
+    "ShineAgent",
     # Raw agent dictionaries (for advanced users)
     "BASIC_AGENTS",
     "BASIC_WRAPPED",

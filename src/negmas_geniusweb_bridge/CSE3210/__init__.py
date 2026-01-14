@@ -75,59 +75,59 @@ AGENT_NOTES: dict[str, str] = {
 }
 
 # Create GW-prefixed wrapped negotiator classes
-GWAgent2 = make_geniusweb_negotiator(Agent2)
-GWAgent3 = make_geniusweb_negotiator(Agent3)
-GWAgent7 = make_geniusweb_negotiator(Agent7)
-GWAgent11 = make_geniusweb_negotiator(Agent11)
-GWAgent14 = make_geniusweb_negotiator(Agent14)
-GWAgent18 = make_geniusweb_negotiator(Agent18)
-GWAgent19 = make_geniusweb_negotiator(Agent19)
-GWAgent22 = make_geniusweb_negotiator(Agent22)
-GWAgent24 = make_geniusweb_negotiator(Agent24)
-GWAgent25 = make_geniusweb_negotiator(Agent25)
-GWAgent26 = make_geniusweb_negotiator(Agent26)
-GWAgent27 = make_geniusweb_negotiator(Agent27)
-GWAgent29 = make_geniusweb_negotiator(Agent29)
-GWAgent32 = make_geniusweb_negotiator(Agent32)
-GWAgent33 = make_geniusweb_negotiator(Agent33)
-GWAgent41 = make_geniusweb_negotiator(Agent41)
-GWAgent43 = make_geniusweb_negotiator(Agent43)
-GWAgent50 = make_geniusweb_negotiator(Agent50)
-GWAgent52 = make_geniusweb_negotiator(Agent52)
-GWAgent55 = make_geniusweb_negotiator(Agent55)
-GWAgent58 = make_geniusweb_negotiator(Agent58)
-GWAgent61 = make_geniusweb_negotiator(Agent61)
-GWAgent64 = make_geniusweb_negotiator(Agent64)
-GWAgent67 = make_geniusweb_negotiator(Agent67)
-GWAgent68 = make_geniusweb_negotiator(Agent68)
+Agent2 = make_geniusweb_negotiator(Agent2)
+Agent3 = make_geniusweb_negotiator(Agent3)
+Agent7 = make_geniusweb_negotiator(Agent7)
+Agent11 = make_geniusweb_negotiator(Agent11)
+Agent14 = make_geniusweb_negotiator(Agent14)
+Agent18 = make_geniusweb_negotiator(Agent18)
+Agent19 = make_geniusweb_negotiator(Agent19)
+Agent22 = make_geniusweb_negotiator(Agent22)
+Agent24 = make_geniusweb_negotiator(Agent24)
+Agent25 = make_geniusweb_negotiator(Agent25)
+Agent26 = make_geniusweb_negotiator(Agent26)
+Agent27 = make_geniusweb_negotiator(Agent27)
+Agent29 = make_geniusweb_negotiator(Agent29)
+Agent32 = make_geniusweb_negotiator(Agent32)
+Agent33 = make_geniusweb_negotiator(Agent33)
+Agent41 = make_geniusweb_negotiator(Agent41)
+Agent43 = make_geniusweb_negotiator(Agent43)
+Agent50 = make_geniusweb_negotiator(Agent50)
+Agent52 = make_geniusweb_negotiator(Agent52)
+Agent55 = make_geniusweb_negotiator(Agent55)
+Agent58 = make_geniusweb_negotiator(Agent58)
+Agent61 = make_geniusweb_negotiator(Agent61)
+Agent64 = make_geniusweb_negotiator(Agent64)
+Agent67 = make_geniusweb_negotiator(Agent67)
+Agent68 = make_geniusweb_negotiator(Agent68)
 
 # Dictionary of wrapped negotiator classes
 WRAPPED_AGENTS: dict[str, Any] = {
-    "GWAgent2": GWAgent2,
-    "GWAgent3": GWAgent3,
-    "GWAgent7": GWAgent7,
-    "GWAgent11": GWAgent11,
-    "GWAgent14": GWAgent14,
-    "GWAgent18": GWAgent18,
-    "GWAgent19": GWAgent19,
-    "GWAgent22": GWAgent22,
-    "GWAgent24": GWAgent24,
-    "GWAgent25": GWAgent25,
-    "GWAgent26": GWAgent26,
-    "GWAgent27": GWAgent27,
-    "GWAgent29": GWAgent29,
-    "GWAgent32": GWAgent32,
-    "GWAgent33": GWAgent33,
-    "GWAgent41": GWAgent41,
-    "GWAgent43": GWAgent43,
-    "GWAgent50": GWAgent50,
-    "GWAgent52": GWAgent52,
-    "GWAgent55": GWAgent55,
-    "GWAgent58": GWAgent58,
-    "GWAgent61": GWAgent61,
-    "GWAgent64": GWAgent64,
-    "GWAgent67": GWAgent67,
-    "GWAgent68": GWAgent68,
+    "Agent2": Agent2,
+    "Agent3": Agent3,
+    "Agent7": Agent7,
+    "Agent11": Agent11,
+    "Agent14": Agent14,
+    "Agent18": Agent18,
+    "Agent19": Agent19,
+    "Agent22": Agent22,
+    "Agent24": Agent24,
+    "Agent25": Agent25,
+    "Agent26": Agent26,
+    "Agent27": Agent27,
+    "Agent29": Agent29,
+    "Agent32": Agent32,
+    "Agent33": Agent33,
+    "Agent41": Agent41,
+    "Agent43": Agent43,
+    "Agent50": Agent50,
+    "Agent52": Agent52,
+    "Agent55": Agent55,
+    "Agent58": Agent58,
+    "Agent61": Agent61,
+    "Agent64": Agent64,
+    "Agent67": Agent67,
+    "Agent68": Agent68,
 }
 
 __all__ = [
@@ -158,31 +158,31 @@ __all__ = [
     "Agent67",
     "Agent68",
     # Wrapped agents
-    "GWAgent2",
-    "GWAgent3",
-    "GWAgent7",
-    "GWAgent11",
-    "GWAgent14",
-    "GWAgent18",
-    "GWAgent19",
-    "GWAgent22",
-    "GWAgent24",
-    "GWAgent25",
-    "GWAgent26",
-    "GWAgent27",
-    "GWAgent29",
-    "GWAgent32",
-    "GWAgent33",
-    "GWAgent41",
-    "GWAgent43",
-    "GWAgent50",
-    "GWAgent52",
-    "GWAgent55",
-    "GWAgent58",
-    "GWAgent61",
-    "GWAgent64",
-    "GWAgent67",
-    "GWAgent68",
+    "Agent2",
+    "Agent3",
+    "Agent7",
+    "Agent11",
+    "Agent14",
+    "Agent18",
+    "Agent19",
+    "Agent22",
+    "Agent24",
+    "Agent25",
+    "Agent26",
+    "Agent27",
+    "Agent29",
+    "Agent32",
+    "Agent33",
+    "Agent41",
+    "Agent43",
+    "Agent50",
+    "Agent52",
+    "Agent55",
+    "Agent58",
+    "Agent61",
+    "Agent64",
+    "Agent67",
+    "Agent68",
     # Dictionaries
     "AGENTS",
     "WRAPPED_AGENTS",

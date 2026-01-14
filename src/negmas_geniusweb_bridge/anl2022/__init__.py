@@ -78,53 +78,53 @@ AGENT_NOTES: dict[str, str] = {
 }
 
 # Create GW-prefixed wrapped negotiator classes
-GWAgent007 = make_geniusweb_negotiator(Agent007)
-GWAgent4410 = make_geniusweb_negotiator(Agent4410)
-GWAgentFish = make_geniusweb_negotiator(AgentFish)
-GWAgentFO2 = make_geniusweb_negotiator(AgentFO2)
-GWBIUAgent = make_geniusweb_negotiator(BIUAgent)
-GWChargingBoul = make_geniusweb_negotiator(ChargingBoul)
-GWCompromisingAgent = make_geniusweb_negotiator(CompromisingAgent)
-GWDreamTeam109Agent = make_geniusweb_negotiator(DreamTeam109Agent)
-GWGEAAgent = make_geniusweb_negotiator(GEAAgent)
-GWLearningAgent = make_geniusweb_negotiator(LearningAgent)
-GWLuckyAgent2022 = make_geniusweb_negotiator(LuckyAgent2022)
-GWMiCROAgent = make_geniusweb_negotiator(MiCROAgent)
-GWProcrastinAgent = make_geniusweb_negotiator(ProcrastinAgent)
-GWRGAgent = make_geniusweb_negotiator(RGAgent)
-GWSmartAgent = make_geniusweb_negotiator(SmartAgent)
-GWSuperAgent = make_geniusweb_negotiator(SuperAgent)
-GWThirdAgent = make_geniusweb_negotiator(ThirdAgent)
-GWTjaronchery10Agent = make_geniusweb_negotiator(Tjaronchery10Agent)
+Agent007 = make_geniusweb_negotiator(Agent007)
+Agent4410 = make_geniusweb_negotiator(Agent4410)
+AgentFish = make_geniusweb_negotiator(AgentFish)
+AgentFO2 = make_geniusweb_negotiator(AgentFO2)
+BIUAgent = make_geniusweb_negotiator(BIUAgent)
+ChargingBoul = make_geniusweb_negotiator(ChargingBoul)
+CompromisingAgent = make_geniusweb_negotiator(CompromisingAgent)
+DreamTeam109Agent = make_geniusweb_negotiator(DreamTeam109Agent)
+GEAAgent = make_geniusweb_negotiator(GEAAgent)
+LearningAgent = make_geniusweb_negotiator(LearningAgent)
+LuckyAgent2022 = make_geniusweb_negotiator(LuckyAgent2022)
+MiCROAgent = make_geniusweb_negotiator(MiCROAgent)
+ProcrastinAgent = make_geniusweb_negotiator(ProcrastinAgent)
+RGAgent = make_geniusweb_negotiator(RGAgent)
+SmartAgent = make_geniusweb_negotiator(SmartAgent)
+SuperAgent = make_geniusweb_negotiator(SuperAgent)
+ThirdAgent = make_geniusweb_negotiator(ThirdAgent)
+Tjaronchery10Agent = make_geniusweb_negotiator(Tjaronchery10Agent)
 
 # Dictionary of wrapped negotiator classes
 WRAPPED_AGENTS: dict[str, Any] = {
-    "GWAgent007": GWAgent007,
-    "GWAgent4410": GWAgent4410,
-    "GWAgentFish": GWAgentFish,
-    "GWAgentFO2": GWAgentFO2,
-    "GWBIUAgent": GWBIUAgent,
-    "GWChargingBoul": GWChargingBoul,
-    "GWCompromisingAgent": GWCompromisingAgent,
-    "GWDreamTeam109Agent": GWDreamTeam109Agent,
-    "GWGEAAgent": GWGEAAgent,
-    "GWLearningAgent": GWLearningAgent,
-    "GWLuckyAgent2022": GWLuckyAgent2022,
-    "GWMiCROAgent": GWMiCROAgent,
-    "GWProcrastinAgent": GWProcrastinAgent,
-    "GWRGAgent": GWRGAgent,
-    "GWSmartAgent": GWSmartAgent,
-    "GWSuperAgent": GWSuperAgent,
-    "GWThirdAgent": GWThirdAgent,
-    "GWTjaronchery10Agent": GWTjaronchery10Agent,
+    "Agent007": Agent007,
+    "Agent4410": Agent4410,
+    "AgentFish": AgentFish,
+    "AgentFO2": AgentFO2,
+    "BIUAgent": BIUAgent,
+    "ChargingBoul": ChargingBoul,
+    "CompromisingAgent": CompromisingAgent,
+    "DreamTeam109Agent": DreamTeam109Agent,
+    "GEAAgent": GEAAgent,
+    "LearningAgent": LearningAgent,
+    "LuckyAgent2022": LuckyAgent2022,
+    "MiCROAgent": MiCROAgent,
+    "ProcrastinAgent": ProcrastinAgent,
+    "RGAgent": RGAgent,
+    "SmartAgent": SmartAgent,
+    "SuperAgent": SuperAgent,
+    "ThirdAgent": ThirdAgent,
+    "Tjaronchery10Agent": Tjaronchery10Agent,
 }
 
-# Add GWPinarAgent if available
+# Add PinarAgent if available
 if PINAR_AGENT_AVAILABLE:
-    GWPinarAgent = make_geniusweb_negotiator(PinarAgent)
-    WRAPPED_AGENTS["GWPinarAgent"] = GWPinarAgent
+    PinarAgent = make_geniusweb_negotiator(PinarAgent)
+    WRAPPED_AGENTS["PinarAgent"] = PinarAgent
 else:
-    GWPinarAgent = None  # type: ignore[misc, assignment]
+    PinarAgent = None  # type: ignore[misc, assignment]
 
 __all__ = [
     # Availability flags
@@ -150,25 +150,25 @@ __all__ = [
     "ThirdAgent",
     "Tjaronchery10Agent",
     # Wrapped agents
-    "GWAgent007",
-    "GWAgent4410",
-    "GWAgentFish",
-    "GWAgentFO2",
-    "GWBIUAgent",
-    "GWChargingBoul",
-    "GWCompromisingAgent",
-    "GWDreamTeam109Agent",
-    "GWGEAAgent",
-    "GWLearningAgent",
-    "GWLuckyAgent2022",
-    "GWMiCROAgent",
-    "GWPinarAgent",
-    "GWProcrastinAgent",
-    "GWRGAgent",
-    "GWSmartAgent",
-    "GWSuperAgent",
-    "GWThirdAgent",
-    "GWTjaronchery10Agent",
+    "Agent007",
+    "Agent4410",
+    "AgentFish",
+    "AgentFO2",
+    "BIUAgent",
+    "ChargingBoul",
+    "CompromisingAgent",
+    "DreamTeam109Agent",
+    "GEAAgent",
+    "LearningAgent",
+    "LuckyAgent2022",
+    "MiCROAgent",
+    "PinarAgent",
+    "ProcrastinAgent",
+    "RGAgent",
+    "SmartAgent",
+    "SuperAgent",
+    "ThirdAgent",
+    "Tjaronchery10Agent",
     # Dictionaries
     "AGENTS",
     "WRAPPED_AGENTS",

@@ -249,10 +249,10 @@ class TestTranslatedAgents:
 
     def test_wrapped_agents_import(self):
         """Test that GW-prefixed wrapped agents can be imported."""
-        from negmas_geniusweb_bridge import GWHammingAgent, GWShineAgent
+        from negmas_geniusweb_bridge import HammingAgent, ShineAgent
 
-        assert GWHammingAgent is not None
-        assert GWShineAgent is not None
+        assert HammingAgent is not None
+        assert ShineAgent is not None
 
     def test_hamming_agent_negotiation(self, simple_issues, ufun_a, ufun_b):
         """Test negotiation with HammingAgent."""
@@ -301,12 +301,12 @@ class TestTranslatedAgents:
         assert state.step > 0
 
     def test_wrapped_hamming_agent(self, simple_issues, ufun_a, ufun_b):
-        """Test using GWHammingAgent directly."""
-        from negmas_geniusweb_bridge import GWHammingAgent
+        """Test using HammingAgent directly."""
+        from negmas_geniusweb_bridge import HammingAgent
 
         mechanism = SAOMechanism(issues=simple_issues, n_steps=50)
 
-        neg_a = GWHammingAgent(ufun=ufun_a, name="gw_hamming")
+        neg_a = HammingAgent(ufun=ufun_a, name="gw_hamming")
         neg_b = AspirationNegotiator(ufun=ufun_b, name="aspiration")
 
         mechanism.add(neg_a)

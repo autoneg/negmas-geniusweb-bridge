@@ -28,7 +28,7 @@ uv sync
 ## Verifying Installation
 
 ```python
-from negmas_geniusweb_bridge import GWHammingAgent
+from negmas_geniusweb_bridge import HammingAgent
 print("Installation successful!")
 ```
 

@@ -119,101 +119,101 @@ AGENT_METADATA: dict[str, dict[str, Any]] = {
 }
 
 # Create GW-prefixed wrapped negotiator classes
-GWAgentKT = make_geniusweb_negotiator(AgentKT)
-GWAgentP1DAMO = make_geniusweb_negotiator(AgentP1DAMO)
-GWAgentXX = make_geniusweb_negotiator(AgentXX)
-GWAhBuNeAgent = make_geniusweb_negotiator(AhBuNeAgent)
-GWAnaconda = make_geniusweb_negotiator(Anaconda)
-GWAngel = make_geniusweb_negotiator(Angel)
-GWAzarAgent = make_geniusweb_negotiator(AzarAgent)
-GWBlingBling = make_geniusweb_negotiator(BlingBling)
-GWDUOAgent = make_geniusweb_negotiator(DUOAgent)
-GWForArisa = make_geniusweb_negotiator(ForArisa)
-GWHammingAgent = make_geniusweb_negotiator(HammingAgent)
-GWNiceAgent = make_geniusweb_negotiator(NiceAgent)
-GWShineAgent = make_geniusweb_negotiator(ShineAgent)
+AgentKT = make_geniusweb_negotiator(AgentKT)
+AgentP1DAMO = make_geniusweb_negotiator(AgentP1DAMO)
+AgentXX = make_geniusweb_negotiator(AgentXX)
+AhBuNeAgent = make_geniusweb_negotiator(AhBuNeAgent)
+Anaconda = make_geniusweb_negotiator(Anaconda)
+Angel = make_geniusweb_negotiator(Angel)
+AzarAgent = make_geniusweb_negotiator(AzarAgent)
+BlingBling = make_geniusweb_negotiator(BlingBling)
+DUOAgent = make_geniusweb_negotiator(DUOAgent)
+ForArisa = make_geniusweb_negotiator(ForArisa)
+HammingAgent = make_geniusweb_negotiator(HammingAgent)
+NiceAgent = make_geniusweb_negotiator(NiceAgent)
+ShineAgent = make_geniusweb_negotiator(ShineAgent)
 
 # Dictionary of wrapped negotiator classes (for registration)
 WRAPPED_AGENTS: dict[str, Any] = {
-    "GWAgentKT": GWAgentKT,
-    "GWAgentP1DAMO": GWAgentP1DAMO,
-    "GWAgentXX": GWAgentXX,
-    "GWAhBuNeAgent": GWAhBuNeAgent,
-    "GWAnaconda": GWAnaconda,
-    "GWAngel": GWAngel,
-    "GWAzarAgent": GWAzarAgent,
-    "GWBlingBling": GWBlingBling,
-    "GWDUOAgent": GWDUOAgent,
-    "GWForArisa": GWForArisa,
-    "GWHammingAgent": GWHammingAgent,
-    "GWNiceAgent": GWNiceAgent,
-    "GWShineAgent": GWShineAgent,
+    "AgentKT": AgentKT,
+    "AgentP1DAMO": AgentP1DAMO,
+    "AgentXX": AgentXX,
+    "AhBuNeAgent": AhBuNeAgent,
+    "Anaconda": Anaconda,
+    "Angel": Angel,
+    "AzarAgent": AzarAgent,
+    "BlingBling": BlingBling,
+    "DUOAgent": DUOAgent,
+    "ForArisa": ForArisa,
+    "HammingAgent": HammingAgent,
+    "NiceAgent": NiceAgent,
+    "ShineAgent": ShineAgent,
 }
 
 # Wrapped agent metadata (same tags as raw agents)
 WRAPPED_AGENT_METADATA: dict[str, dict[str, Any]] = {
-    "GWAgentKT": {
-        "class": GWAgentKT,
+    "AgentKT": {
+        "class": AgentKT,
         "tags": ["AI-translated", "SHAOP", "SAOP"],
         "description": "Uses COBYLA optimization for utility learning with game-theoretic acceptance thresholds",
     },
-    "GWAgentP1DAMO": {
-        "class": GWAgentP1DAMO,
+    "AgentP1DAMO": {
+        "class": AgentP1DAMO,
         "tags": ["AI-translated", "SHAOP"],
         "description": "Uses hill climbing optimization with importance maps and time-dependent concession",
     },
-    "GWAgentXX": {
-        "class": GWAgentXX,
+    "AgentXX": {
+        "class": AgentXX,
         "tags": ["AI-translated", "SHAOP", "SAOP"],
         "description": "Uses importance maps with Nash point estimation and frequency-based opponent modeling",
     },
-    "GWAhBuNeAgent": {
-        "class": GWAhBuNeAgent,
+    "AhBuNeAgent": {
+        "class": AhBuNeAgent,
         "tags": ["AI-translated", "SHAOP"],
         "description": "Uses similarity-based bidding with preference elicitation",
     },
-    "GWAnaconda": {
-        "class": GWAnaconda,
+    "Anaconda": {
+        "class": Anaconda,
         "tags": ["AI-translated", "SHAOP"],
         "description": "Uses importance maps with dynamic lower bounds and elicitation for SHAOP",
     },
-    "GWAngel": {
-        "class": GWAngel,
+    "Angel": {
+        "class": Angel,
         "tags": ["AI-translated", "SHAOP", "SAOP"],
         "description": "Uses heuristic-based opponent modeling with confidence-scaled elicitation",
     },
-    "GWAzarAgent": {
-        "class": GWAzarAgent,
+    "AzarAgent": {
+        "class": AzarAgent,
         "tags": ["AI-translated", "SHAOP", "SAOP"],
         "description": "Uses GravityEs user model with frequency-based opponent modeling",
     },
-    "GWBlingBling": {
-        "class": GWBlingBling,
+    "BlingBling": {
+        "class": BlingBling,
         "tags": ["AI-translated", "SHAOP", "SAOP"],
         "description": "Uses RankNet neural network for preference learning with frequency-based opponent modeling",
     },
-    "GWDUOAgent": {
-        "class": GWDUOAgent,
+    "DUOAgent": {
+        "class": DUOAgent,
         "tags": ["AI-translated", "SHAOP", "SAOP"],
         "description": "Uses linear regression for bid prediction with preference elicitation",
     },
-    "GWForArisa": {
-        "class": GWForArisa,
+    "ForArisa": {
+        "class": ForArisa,
         "tags": ["AI-translated", "SAOP"],
         "description": "Uses genetic algorithm for utility estimation with JohnnyBlack opponent modeling",
     },
-    "GWHammingAgent": {
-        "class": GWHammingAgent,
+    "HammingAgent": {
+        "class": HammingAgent,
         "tags": ["AI-translated", "SAOP"],
         "description": "Uses Hamming distance for opponent modeling",
     },
-    "GWNiceAgent": {
-        "class": GWNiceAgent,
+    "NiceAgent": {
+        "class": NiceAgent,
         "tags": ["AI-translated", "SHAOP", "SAOP"],
         "description": "Uses elicitation to learn preferences and mirroring strategy for offers",
     },
-    "GWShineAgent": {
-        "class": GWShineAgent,
+    "ShineAgent": {
+        "class": ShineAgent,
         "tags": ["AI-translated", "SAOP"],
         "description": "Adaptive agent with dynamic strategy adjustment",
     },
@@ -235,19 +235,19 @@ __all__ = [
     "NiceAgent",
     "ShineAgent",
     # Wrapped agents
-    "GWAgentKT",
-    "GWAgentP1DAMO",
-    "GWAgentXX",
-    "GWAhBuNeAgent",
-    "GWAnaconda",
-    "GWAngel",
-    "GWAzarAgent",
-    "GWBlingBling",
-    "GWDUOAgent",
-    "GWForArisa",
-    "GWHammingAgent",
-    "GWNiceAgent",
-    "GWShineAgent",
+    "AgentKT",
+    "AgentP1DAMO",
+    "AgentXX",
+    "AhBuNeAgent",
+    "Anaconda",
+    "Angel",
+    "AzarAgent",
+    "BlingBling",
+    "DUOAgent",
+    "ForArisa",
+    "HammingAgent",
+    "NiceAgent",
+    "ShineAgent",
     # Dictionaries
     "AGENTS",
     "WRAPPED_AGENTS",

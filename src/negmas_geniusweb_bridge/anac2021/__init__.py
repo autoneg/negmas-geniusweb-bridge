@@ -81,52 +81,52 @@ AGENT_NOTES: dict[str, str] = {
 }
 
 # Create GW-prefixed wrapped negotiator classes
-GWAgentFO2021 = make_geniusweb_negotiator(AgentFO2021)
-GWAlphaBIU = make_geniusweb_negotiator(AlphaBIU)
-GWGamblerAgent = make_geniusweb_negotiator(GamblerAgent)
-GWMatrixAlienAgent = make_geniusweb_negotiator(MatrixAlienAgent)
-GWTheDiceHaggler2021 = make_geniusweb_negotiator(TheDiceHaggler2021)
-GWTripleAgent = make_geniusweb_negotiator(TripleAgent)
+AgentFO2021 = make_geniusweb_negotiator(AgentFO2021)
+AlphaBIU = make_geniusweb_negotiator(AlphaBIU)
+GamblerAgent = make_geniusweb_negotiator(GamblerAgent)
+MatrixAlienAgent = make_geniusweb_negotiator(MatrixAlienAgent)
+TheDiceHaggler2021 = make_geniusweb_negotiator(TheDiceHaggler2021)
+TripleAgent = make_geniusweb_negotiator(TripleAgent)
 
 # Dictionary of wrapped negotiator classes (for registration)
 WRAPPED_AGENTS: dict[str, Any] = {
-    "GWAgentFO2021": GWAgentFO2021,
-    "GWAlphaBIU": GWAlphaBIU,
-    "GWGamblerAgent": GWGamblerAgent,
-    "GWMatrixAlienAgent": GWMatrixAlienAgent,
-    "GWTheDiceHaggler2021": GWTheDiceHaggler2021,
-    "GWTripleAgent": GWTripleAgent,
+    "AgentFO2021": AgentFO2021,
+    "AlphaBIU": AlphaBIU,
+    "GamblerAgent": GamblerAgent,
+    "MatrixAlienAgent": MatrixAlienAgent,
+    "TheDiceHaggler2021": TheDiceHaggler2021,
+    "TripleAgent": TripleAgent,
 }
 
 # Wrapped agent metadata (same tags as raw agents)
 WRAPPED_AGENT_METADATA: dict[str, dict[str, Any]] = {
-    "GWAgentFO2021": {
-        "class": GWAgentFO2021,
+    "AgentFO2021": {
+        "class": AgentFO2021,
         "tags": ["AI-translated", "SAOP", "learning"],
         "description": "Learning-based agent with time-dependent concession and opponent tracking",
     },
-    "GWAlphaBIU": {
-        "class": GWAlphaBIU,
+    "AlphaBIU": {
+        "class": AlphaBIU,
         "tags": ["AI-translated", "SAOP", "learning"],
         "description": "Frequency-based opponent modeling with two-phase strategy",
     },
-    "GWGamblerAgent": {
-        "class": GWGamblerAgent,
+    "GamblerAgent": {
+        "class": GamblerAgent,
         "tags": ["AI-translated", "SAOP", "learning"],
         "description": "UCB Multi-Armed Bandit selecting among 4 PonPoko-style sub-agents",
     },
-    "GWMatrixAlienAgent": {
-        "class": GWMatrixAlienAgent,
+    "MatrixAlienAgent": {
+        "class": MatrixAlienAgent,
         "tags": ["AI-translated", "SAOP"],
         "description": "Adaptive boulware-style agent with multi-factor bid scoring",
     },
-    "GWTheDiceHaggler2021": {
-        "class": GWTheDiceHaggler2021,
+    "TheDiceHaggler2021": {
+        "class": TheDiceHaggler2021,
         "tags": ["AI-translated", "SAOP"],
         "description": "Multi-phase time-dependent strategy with Pareto estimation and TOPSIS",
     },
-    "GWTripleAgent": {
-        "class": GWTripleAgent,
+    "TripleAgent": {
+        "class": TripleAgent,
         "tags": ["AI-translated", "SAOP", "learning"],
         "description": "Uses frequency model and utility space analysis for bidding",
     },
@@ -141,12 +141,12 @@ __all__ = [
     "TheDiceHaggler2021",
     "TripleAgent",
     # Wrapped agents
-    "GWAgentFO2021",
-    "GWAlphaBIU",
-    "GWGamblerAgent",
-    "GWMatrixAlienAgent",
-    "GWTheDiceHaggler2021",
-    "GWTripleAgent",
+    "AgentFO2021",
+    "AlphaBIU",
+    "GamblerAgent",
+    "MatrixAlienAgent",
+    "TheDiceHaggler2021",
+    "TripleAgent",
     # Dictionaries
     "AGENTS",
     "WRAPPED_AGENTS",

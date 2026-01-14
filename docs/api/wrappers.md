@@ -23,7 +23,7 @@ Create a reusable NegMAS-compatible negotiator class from a GeniusWeb party clas
 ```python
 from negmas import SAOMechanism, make_issue
 from negmas.preferences import LinearAdditiveUtilityFunction
-from negmas_geniusweb_bridge import GWBoulwareAgent
+from negmas_geniusweb_bridge import BoulwareAgent
 from negmas_geniusweb_bridge.wrapper import make_geniusweb_negotiator
 from negmas_geniusweb_bridge.basic import RandomAgent
 
@@ -32,11 +32,11 @@ issues = [make_issue(5, "price"), make_issue(3, "quality")]
 ufun = LinearAdditiveUtilityFunction.random(issues=issues, normalized=True)
 
 mechanism = SAOMechanism(issues=issues, n_steps=100)
-mechanism.add(GWBoulwareAgent(ufun=ufun, name="boulware"))
+mechanism.add(BoulwareAgent(ufun=ufun, name="boulware"))
 
 # Option 2: Create your own wrapped negotiator class
-GWRandomAgent = make_geniusweb_negotiator(RandomAgent)
-mechanism.add(GWRandomAgent(ufun=ufun, name="random"))
+RandomAgent = make_geniusweb_negotiator(RandomAgent)
+mechanism.add(RandomAgent(ufun=ufun, name="random"))
 
 # Run the negotiation
 mechanism.run()

@@ -9,7 +9,7 @@ This guide will help you get started with using GeniusWeb agents in NegMAS negot
 ```python
 from negmas import SAOMechanism, make_issue, make_os
 from negmas.preferences import LinearAdditiveUtilityFunction as U
-from negmas_geniusweb_bridge import GWHammingAgent, GWShineAgent
+from negmas_geniusweb_bridge import HammingAgent, ShineAgent
 
 # Define the negotiation issues
 issues = [
@@ -32,8 +32,8 @@ ufun1 = U.random(outcome_space=outcome_space)
 ufun2 = U.random(outcome_space=outcome_space)
 
 # Add agents with their utility functions
-mechanism.add(GWHammingAgent(name="hamming"), ufun=ufun1)
-mechanism.add(GWShineAgent(name="shine"), ufun=ufun2)
+mechanism.add(HammingAgent(name="hamming"), ufun=ufun1)
+mechanism.add(ShineAgent(name="shine"), ufun=ufun2)
 
 # Run the negotiation
 state = mechanism.run()
@@ -51,7 +51,7 @@ else:
 from negmas import SAOMechanism, make_issue, make_os
 from negmas.sao import AspirationNegotiator
 from negmas.preferences import LinearAdditiveUtilityFunction as U
-from negmas_geniusweb_bridge import GWHammingAgent
+from negmas_geniusweb_bridge import HammingAgent
 
 # Create scenario
 issues = [make_issue(name="x", values=10)]
@@ -64,7 +64,7 @@ mechanism = SAOMechanism(outcome_space=outcome_space, n_steps=50)
 ufun1 = U.random(outcome_space=outcome_space)
 ufun2 = U.random(outcome_space=outcome_space)
 
-mechanism.add(GWHammingAgent(name="gw_agent"), ufun=ufun1)
+mechanism.add(HammingAgent(name="gw_agent"), ufun=ufun1)
 mechanism.add(AspirationNegotiator(name="negmas_agent"), ufun=ufun2)
 
 # Run
@@ -76,8 +76,8 @@ state = mechanism.run()
 The bridge includes agents from various competitions:
 
 ### ANAC 2020
-- `GWHammingAgent` - Uses Hamming distance for bid evaluation
-- `GWShineAgent` - Adaptive bidding strategy
+- `HammingAgent` - Uses Hamming distance for bid evaluation
+- `ShineAgent` - Adaptive bidding strategy
 
 ### ANL 2022
 - Various agents from the Automated Negotiation League

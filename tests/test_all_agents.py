@@ -3,7 +3,7 @@
 This module tests every wrapped agent in the library to ensure they can:
 1. Be instantiated correctly
 2. Negotiate against AspirationNegotiator without errors
-3. Negotiate against another GeniusWeb agent (GWBoulwareAgent) without errors
+3. Negotiate against another GeniusWeb agent (BoulwareAgent) without errors
 """
 
 from __future__ import annotations
@@ -13,7 +13,7 @@ from negmas import SAOMechanism, make_issue
 from negmas.preferences import LinearAdditiveUtilityFunction
 from negmas.sao import AspirationNegotiator
 
-from negmas_geniusweb_bridge import ALL_AGENTS, GWBoulwareAgent
+from negmas_geniusweb_bridge import ALL_AGENTS, BoulwareAgent
 
 
 # ============================================================================
@@ -45,98 +45,98 @@ def ufun_b(simple_issues):
 
 # Basic agents - reference implementations
 BASIC_AGENTS = [
-    "GWBoulwareAgent",
-    "GWConcederAgent",
-    "GWHardlinerAgent",
-    "GWLinearAgent",
-    "GWRandomAgent",
-    "GWStupidAgent",
-    "GWTimeDependentAgent",
+    "BoulwareAgent",
+    "ConcederAgent",
+    "HardlinerAgent",
+    "LinearAgent",
+    "RandomAgent",
+    "StupidAgent",
+    "TimeDependentAgent",
 ]
 
 # ANAC 2020 agents - AI-translated from Java
 ANAC2020_AGENTS = [
-    "GWAgentKT",
-    "GWAgentP1DAMO",
-    "GWAgentXX",
-    "GWAhBuNeAgent",
-    "GWAnaconda",
-    "GWAngel",
-    "GWAzarAgent",
-    "GWBlingBling",
-    "GWDUOAgent",
-    "GWForArisa",
-    "GWHammingAgent",
-    "GWNiceAgent",
-    "GWShineAgent",
+    "AgentKT",
+    "AgentP1DAMO",
+    "AgentXX",
+    "AhBuNeAgent",
+    "Anaconda",
+    "Angel",
+    "AzarAgent",
+    "BlingBling",
+    "DUOAgent",
+    "ForArisa",
+    "HammingAgent",
+    "NiceAgent",
+    "ShineAgent",
 ]
 
 # ANL 2022 agents - Python native
 ANL2022_AGENTS = [
-    "GWAgent007",
-    "GWAgent4410",
-    "GWAgentFish",
-    "GWAgentFO2",
-    "GWBIUAgent",
-    "GWChargingBoul",
-    "GWCompromisingAgent",
-    "GWDreamTeam109Agent",
-    "GWGEAAgent",
-    "GWLearningAgent",
-    "GWLuckyAgent2022",
-    "GWMiCROAgent",
-    "GWProcrastinAgent",
-    "GWRGAgent",
-    "GWSmartAgent",
-    "GWSuperAgent",
-    "GWThirdAgent",
-    "GWTjaronchery10Agent",
+    "Agent007",
+    "Agent4410",
+    "AgentFish",
+    "AgentFO2",
+    "BIUAgent",
+    "ChargingBoul",
+    "CompromisingAgent",
+    "DreamTeam109Agent",
+    "GEAAgent",
+    "LearningAgent",
+    "LuckyAgent2022",
+    "MiCROAgent",
+    "ProcrastinAgent",
+    "RGAgent",
+    "SmartAgent",
+    "SuperAgent",
+    "ThirdAgent",
+    "Tjaronchery10Agent",
 ]
 
 # ANL 2023 agents - Python native
 ANL2023_AGENTS = [
-    "GWAgentFO3",
-    "GWAmbitiousAgent",
-    "GWAntAllianceAgent",
-    "GWAntHeartAgent",
-    "GWColmanAnacondotAgent2",
-    "GWExploitAgent",
-    "GWGotAgent",
-    "GWHybridAgent2023",
-    "GWKBTimeDiffAgent",
-    "GWMiCRO2023",
-    "GWPopularAgent",
-    "GWSpaghettiAgent",
-    "GWTripleEAgent",
+    "AgentFO3",
+    "AmbitiousAgent",
+    "AntAllianceAgent",
+    "AntHeartAgent",
+    "ColmanAnacondotAgent2",
+    "ExploitAgent",
+    "GotAgent",
+    "HybridAgent2023",
+    "KBTimeDiffAgent",
+    "MiCRO2023",
+    "PopularAgent",
+    "SpaghettiAgent",
+    "TripleEAgent",
 ]
 
 # CSE3210 agents - Python native (TU Delft course)
 CSE3210_AGENTS = [
-    "GWAgent2",
-    "GWAgent3",
-    "GWAgent7",
-    "GWAgent11",
-    "GWAgent14",
-    "GWAgent18",
-    "GWAgent19",
-    "GWAgent22",
-    "GWAgent24",
-    "GWAgent25",
-    "GWAgent26",
-    "GWAgent27",
-    "GWAgent29",
-    "GWAgent32",
-    "GWAgent33",
-    "GWAgent41",
-    "GWAgent43",
-    "GWAgent50",
-    "GWAgent52",
-    "GWAgent55",
-    "GWAgent58",
-    "GWAgent61",
-    "GWAgent64",
-    "GWAgent67",
-    "GWAgent68",
+    "Agent2",
+    "Agent3",
+    "Agent7",
+    "Agent11",
+    "Agent14",
+    "Agent18",
+    "Agent19",
+    "Agent22",
+    "Agent24",
+    "Agent25",
+    "Agent26",
+    "Agent27",
+    "Agent29",
+    "Agent32",
+    "Agent33",
+    "Agent41",
+    "Agent43",
+    "Agent50",
+    "Agent52",
+    "Agent55",
+    "Agent58",
+    "Agent61",
+    "Agent64",
+    "Agent67",
+    "Agent68",
 ]
 
 # All agents combined (excluding optional ones that require extra dependencies)
@@ -147,33 +147,33 @@ ALL_AGENT_NAMES = (
 # Agents with known issues that may fail some tests
 # These are still tested but with xfail markers
 AGENTS_WITH_KNOWN_ISSUES = {
-    "GWCompromisingAgent": "May cause 'Action cannot be None' errors",
-    "GWLearningAgent": "May cause 'Action cannot be None' errors",
-    "GWAgent22": "May throw scipy divide by zero errors",
-    "GWAgent68": "May have issues handling opening bid",
-    "GWProcrastinAgent": "May have issues with first offer accepted",
-    "GWHardlinerAgent": "Never concedes - unlikely to reach agreement",
+    "CompromisingAgent": "May cause 'Action cannot be None' errors",
+    "LearningAgent": "May cause 'Action cannot be None' errors",
+    "Agent22": "May throw scipy divide by zero errors",
+    "Agent68": "May have issues handling opening bid",
+    "ProcrastinAgent": "May have issues with first offer accepted",
+    "HardlinerAgent": "Never concedes - unlikely to reach agreement",
     # ANL2023 agents with edge case issues
-    "GWAgentFO3": "Empty bid list on small domains (randrange(0, 0))",
-    "GWAmbitiousAgent": "ProgressRounds missing getStart method",
-    "GWAntAllianceAgent": "Empty bid list on small domains",
-    "GWKBTimeDiffAgent": "Division by zero on small domains",
-    "GWSpaghettiAgent": "Empty deque pop on small domains",
+    "AgentFO3": "Empty bid list on small domains (randrange(0, 0))",
+    "AmbitiousAgent": "ProgressRounds missing getStart method",
+    "AntAllianceAgent": "Empty bid list on small domains",
+    "KBTimeDiffAgent": "Division by zero on small domains",
+    "SpaghettiAgent": "Empty deque pop on small domains",
     # ANL2022 agents with edge case issues
-    "GWAgentFO2": "Empty bid list on small domains",
-    "GWBIUAgent": "May timeout >60 secs on some domains",
-    "GWThirdAgent": "Empty bid list on small domains",
+    "AgentFO2": "Empty bid list on small domains",
+    "BIUAgent": "May timeout >60 secs on some domains",
+    "ThirdAgent": "Empty bid list on small domains",
     # CSE3210 agents with edge case issues
-    "GWAgent18": "Zero-size array reduction issues",
-    "GWAgent33": "Random choice from empty array",
-    "GWAgent52": "Random choice from empty array",
-    "GWAgent67": "Edge case issues on small domains",
+    "Agent18": "Zero-size array reduction issues",
+    "Agent33": "Random choice from empty array",
+    "Agent52": "Random choice from empty array",
+    "Agent67": "Edge case issues on small domains",
 }
 
 # Agents that are slow and should have longer timeouts
 SLOW_AGENTS = {
-    "GWGEAAgent": "Slow execution, ~1.5sec per turn",
-    "GWBIUAgent": "May timeout >60 secs on some domains",
+    "GEAAgent": "Slow execution, ~1.5sec per turn",
+    "BIUAgent": "May timeout >60 secs on some domains",
 }
 
 
@@ -240,15 +240,15 @@ class TestBasicAgentsVsAspiration:
 
 
 class TestBasicAgentsVsGeniusWeb:
-    """Test basic agents against GWBoulwareAgent."""
+    """Test basic agents against BoulwareAgent."""
 
     @pytest.mark.parametrize("agent_name", BASIC_AGENTS)
     def test_vs_geniusweb(self, agent_name, simple_issues, ufun_a, ufun_b):
-        """Test that basic agents can negotiate against GWBoulwareAgent."""
+        """Test that basic agents can negotiate against BoulwareAgent."""
         agent_cls = get_agent_class(agent_name)
 
         state = run_negotiation(
-            agent_cls, GWBoulwareAgent, ufun_a, ufun_b, simple_issues
+            agent_cls, BoulwareAgent, ufun_a, ufun_b, simple_issues
         )
 
         assert not state.running, f"{agent_name} negotiation did not complete"
@@ -272,15 +272,15 @@ class TestANAC2020AgentsVsAspiration:
 
 
 class TestANAC2020AgentsVsGeniusWeb:
-    """Test ANAC 2020 agents against GWBoulwareAgent."""
+    """Test ANAC 2020 agents against BoulwareAgent."""
 
     @pytest.mark.parametrize("agent_name", ANAC2020_AGENTS)
     def test_vs_geniusweb(self, agent_name, simple_issues, ufun_a, ufun_b):
-        """Test that ANAC 2020 agents can negotiate against GWBoulwareAgent."""
+        """Test that ANAC 2020 agents can negotiate against BoulwareAgent."""
         agent_cls = get_agent_class(agent_name)
 
         state = run_negotiation(
-            agent_cls, GWBoulwareAgent, ufun_a, ufun_b, simple_issues
+            agent_cls, BoulwareAgent, ufun_a, ufun_b, simple_issues
         )
 
         assert not state.running, f"{agent_name} negotiation did not complete"
@@ -308,11 +308,11 @@ class TestANL2022AgentsVsAspiration:
 
 
 class TestANL2022AgentsVsGeniusWeb:
-    """Test ANL 2022 agents against GWBoulwareAgent."""
+    """Test ANL 2022 agents against BoulwareAgent."""
 
     @pytest.mark.parametrize("agent_name", ANL2022_AGENTS)
     def test_vs_geniusweb(self, agent_name, simple_issues, ufun_a, ufun_b):
-        """Test that ANL 2022 agents can negotiate against GWBoulwareAgent."""
+        """Test that ANL 2022 agents can negotiate against BoulwareAgent."""
         if agent_name in AGENTS_WITH_KNOWN_ISSUES:
             pytest.xfail(AGENTS_WITH_KNOWN_ISSUES[agent_name])
 
@@ -320,7 +320,7 @@ class TestANL2022AgentsVsGeniusWeb:
         n_steps = 100 if agent_name in SLOW_AGENTS else 50
 
         state = run_negotiation(
-            agent_cls, GWBoulwareAgent, ufun_a, ufun_b, simple_issues, n_steps
+            agent_cls, BoulwareAgent, ufun_a, ufun_b, simple_issues, n_steps
         )
 
         assert not state.running, f"{agent_name} negotiation did not complete"
@@ -347,18 +347,18 @@ class TestANL2023AgentsVsAspiration:
 
 
 class TestANL2023AgentsVsGeniusWeb:
-    """Test ANL 2023 agents against GWBoulwareAgent."""
+    """Test ANL 2023 agents against BoulwareAgent."""
 
     @pytest.mark.parametrize("agent_name", ANL2023_AGENTS)
     def test_vs_geniusweb(self, agent_name, simple_issues, ufun_a, ufun_b):
-        """Test that ANL 2023 agents can negotiate against GWBoulwareAgent."""
+        """Test that ANL 2023 agents can negotiate against BoulwareAgent."""
         if agent_name in AGENTS_WITH_KNOWN_ISSUES:
             pytest.xfail(AGENTS_WITH_KNOWN_ISSUES[agent_name])
 
         agent_cls = get_agent_class(agent_name)
 
         state = run_negotiation(
-            agent_cls, GWBoulwareAgent, ufun_a, ufun_b, simple_issues
+            agent_cls, BoulwareAgent, ufun_a, ufun_b, simple_issues
         )
 
         assert not state.running, f"{agent_name} negotiation did not complete"
@@ -385,18 +385,18 @@ class TestCSE3210AgentsVsAspiration:
 
 
 class TestCSE3210AgentsVsGeniusWeb:
-    """Test CSE3210 agents against GWBoulwareAgent."""
+    """Test CSE3210 agents against BoulwareAgent."""
 
     @pytest.mark.parametrize("agent_name", CSE3210_AGENTS)
     def test_vs_geniusweb(self, agent_name, simple_issues, ufun_a, ufun_b):
-        """Test that CSE3210 agents can negotiate against GWBoulwareAgent."""
+        """Test that CSE3210 agents can negotiate against BoulwareAgent."""
         if agent_name in AGENTS_WITH_KNOWN_ISSUES:
             pytest.xfail(AGENTS_WITH_KNOWN_ISSUES[agent_name])
 
         agent_cls = get_agent_class(agent_name)
 
         state = run_negotiation(
-            agent_cls, GWBoulwareAgent, ufun_a, ufun_b, simple_issues
+            agent_cls, BoulwareAgent, ufun_a, ufun_b, simple_issues
         )
 
         assert not state.running, f"{agent_name} negotiation did not complete"
@@ -422,8 +422,8 @@ class TestCrossModuleNegotiation:
 
     def test_anac2020_vs_anl2022(self, simple_issues, ufun_a, ufun_b):
         """Test negotiation between ANAC 2020 and ANL 2022 agents."""
-        agent_a_cls = get_agent_class("GWHammingAgent")
-        agent_b_cls = get_agent_class("GWAgent007")
+        agent_a_cls = get_agent_class("HammingAgent")
+        agent_b_cls = get_agent_class("Agent007")
 
         state = run_negotiation(agent_a_cls, agent_b_cls, ufun_a, ufun_b, simple_issues)
 
@@ -432,8 +432,8 @@ class TestCrossModuleNegotiation:
 
     def test_anl2022_vs_anl2023(self, simple_issues, ufun_a, ufun_b):
         """Test negotiation between ANL 2022 and ANL 2023 agents."""
-        agent_a_cls = get_agent_class("GWMiCROAgent")
-        agent_b_cls = get_agent_class("GWMiCRO2023")
+        agent_a_cls = get_agent_class("MiCROAgent")
+        agent_b_cls = get_agent_class("MiCRO2023")
 
         state = run_negotiation(agent_a_cls, agent_b_cls, ufun_a, ufun_b, simple_issues)
 
@@ -442,8 +442,8 @@ class TestCrossModuleNegotiation:
 
     def test_anl2023_vs_cse3210(self, simple_issues, ufun_a, ufun_b):
         """Test negotiation between ANL 2023 and CSE3210 agents."""
-        agent_a_cls = get_agent_class("GWExploitAgent")
-        agent_b_cls = get_agent_class("GWAgent11")
+        agent_a_cls = get_agent_class("ExploitAgent")
+        agent_b_cls = get_agent_class("Agent11")
 
         state = run_negotiation(agent_a_cls, agent_b_cls, ufun_a, ufun_b, simple_issues)
 
@@ -452,8 +452,8 @@ class TestCrossModuleNegotiation:
 
     def test_basic_vs_anac2020(self, simple_issues, ufun_a, ufun_b):
         """Test negotiation between basic and ANAC 2020 agents."""
-        agent_a_cls = get_agent_class("GWConcederAgent")
-        agent_b_cls = get_agent_class("GWShineAgent")
+        agent_a_cls = get_agent_class("ConcederAgent")
+        agent_b_cls = get_agent_class("ShineAgent")
 
         state = run_negotiation(agent_a_cls, agent_b_cls, ufun_a, ufun_b, simple_issues)
 

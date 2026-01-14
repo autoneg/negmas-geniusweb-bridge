@@ -31,7 +31,7 @@ from negmas import SAOMechanism, make_issue
 from negmas.preferences import LinearAdditiveUtilityFunction
 from negmas.sao import AspirationNegotiator
 
-from negmas_geniusweb_bridge import GWBoulwareAgent
+from negmas_geniusweb_bridge import BoulwareAgent
 
 # Create a negotiation scenario
 issues = [make_issue(name="price", values=10), make_issue(name="quantity", values=5)]
@@ -41,7 +41,7 @@ ufun_b = LinearAdditiveUtilityFunction.random(issues=issues, normalized=True)
 mechanism = SAOMechanism(issues=issues, n_steps=100)
 
 # Add a wrapped GeniusWeb agent
-mechanism.add(GWBoulwareAgent(ufun=ufun_a, name="gw_agent"))
+mechanism.add(BoulwareAgent(ufun=ufun_a, name="gw_agent"))
 
 # Add a NegMAS agent
 mechanism.add(AspirationNegotiator(ufun=ufun_b, name="negmas_agent"))

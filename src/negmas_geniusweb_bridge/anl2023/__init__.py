@@ -58,45 +58,45 @@ if MSC_AGENT_AVAILABLE:
     AGENTS["MSCAgent"] = MSCAgent
 
 # Create GW-prefixed wrapped negotiator classes
-GWAgentFO3 = make_geniusweb_negotiator(AgentFO3)
-GWAmbitiousAgent = make_geniusweb_negotiator(AmbitiousAgent)
-GWAntAllianceAgent = make_geniusweb_negotiator(AntAllianceAgent)
-GWAntHeartAgent = make_geniusweb_negotiator(AntHeartAgent)
-GWColmanAnacondotAgent2 = make_geniusweb_negotiator(ColmanAnacondotAgent2)
-GWExploitAgent = make_geniusweb_negotiator(ExploitAgent)
-GWGotAgent = make_geniusweb_negotiator(GotAgent)
-GWHybridAgent2023 = make_geniusweb_negotiator(HybridAgent2023)
-GWKBTimeDiffAgent = make_geniusweb_negotiator(KBTimeDiffAgent)
-GWMiCRO2023 = make_geniusweb_negotiator(MiCRO2023)
-GWPopularAgent = make_geniusweb_negotiator(PopularAgent)
-GWSmartAgent = make_geniusweb_negotiator(SmartAgent)
-GWSpaghettiAgent = make_geniusweb_negotiator(SpaghettiAgent)
-GWTripleEAgent = make_geniusweb_negotiator(TripleEAgent)
+AgentFO3 = make_geniusweb_negotiator(AgentFO3)
+AmbitiousAgent = make_geniusweb_negotiator(AmbitiousAgent)
+AntAllianceAgent = make_geniusweb_negotiator(AntAllianceAgent)
+AntHeartAgent = make_geniusweb_negotiator(AntHeartAgent)
+ColmanAnacondotAgent2 = make_geniusweb_negotiator(ColmanAnacondotAgent2)
+ExploitAgent = make_geniusweb_negotiator(ExploitAgent)
+GotAgent = make_geniusweb_negotiator(GotAgent)
+HybridAgent2023 = make_geniusweb_negotiator(HybridAgent2023)
+KBTimeDiffAgent = make_geniusweb_negotiator(KBTimeDiffAgent)
+MiCRO2023 = make_geniusweb_negotiator(MiCRO2023)
+PopularAgent = make_geniusweb_negotiator(PopularAgent)
+SmartAgent = make_geniusweb_negotiator(SmartAgent)
+SpaghettiAgent = make_geniusweb_negotiator(SpaghettiAgent)
+TripleEAgent = make_geniusweb_negotiator(TripleEAgent)
 
 # Dictionary of wrapped negotiator classes
 WRAPPED_AGENTS: dict[str, Any] = {
-    "GWAgentFO3": GWAgentFO3,
-    "GWAmbitiousAgent": GWAmbitiousAgent,
-    "GWAntAllianceAgent": GWAntAllianceAgent,
-    "GWAntHeartAgent": GWAntHeartAgent,
-    "GWColmanAnacondotAgent2": GWColmanAnacondotAgent2,
-    "GWExploitAgent": GWExploitAgent,
-    "GWGotAgent": GWGotAgent,
-    "GWHybridAgent2023": GWHybridAgent2023,
-    "GWKBTimeDiffAgent": GWKBTimeDiffAgent,
-    "GWMiCRO2023": GWMiCRO2023,
-    "GWPopularAgent": GWPopularAgent,
-    "GWSmartAgent": GWSmartAgent,
-    "GWSpaghettiAgent": GWSpaghettiAgent,
-    "GWTripleEAgent": GWTripleEAgent,
+    "AgentFO3": AgentFO3,
+    "AmbitiousAgent": AmbitiousAgent,
+    "AntAllianceAgent": AntAllianceAgent,
+    "AntHeartAgent": AntHeartAgent,
+    "ColmanAnacondotAgent2": ColmanAnacondotAgent2,
+    "ExploitAgent": ExploitAgent,
+    "GotAgent": GotAgent,
+    "HybridAgent2023": HybridAgent2023,
+    "KBTimeDiffAgent": KBTimeDiffAgent,
+    "MiCRO2023": MiCRO2023,
+    "PopularAgent": PopularAgent,
+    "SmartAgent": SmartAgent,
+    "SpaghettiAgent": SpaghettiAgent,
+    "TripleEAgent": TripleEAgent,
 }
 
-# Add GWMSCAgent if available
+# Add MSCAgent if available
 if MSC_AGENT_AVAILABLE:
-    GWMSCAgent = make_geniusweb_negotiator(MSCAgent)
-    WRAPPED_AGENTS["GWMSCAgent"] = GWMSCAgent
+    MSCAgent = make_geniusweb_negotiator(MSCAgent)
+    WRAPPED_AGENTS["MSCAgent"] = MSCAgent
 else:
-    GWMSCAgent = None  # type: ignore[misc, assignment]
+    MSCAgent = None  # type: ignore[misc, assignment]
 
 __all__ = [
     # Availability flags
@@ -118,21 +118,21 @@ __all__ = [
     "SpaghettiAgent",
     "TripleEAgent",
     # Wrapped agents
-    "GWAgentFO3",
-    "GWAmbitiousAgent",
-    "GWAntAllianceAgent",
-    "GWAntHeartAgent",
-    "GWColmanAnacondotAgent2",
-    "GWExploitAgent",
-    "GWGotAgent",
-    "GWHybridAgent2023",
-    "GWKBTimeDiffAgent",
-    "GWMiCRO2023",
-    "GWMSCAgent",
-    "GWPopularAgent",
-    "GWSmartAgent",
-    "GWSpaghettiAgent",
-    "GWTripleEAgent",
+    "AgentFO3",
+    "AmbitiousAgent",
+    "AntAllianceAgent",
+    "AntHeartAgent",
+    "ColmanAnacondotAgent2",
+    "ExploitAgent",
+    "GotAgent",
+    "HybridAgent2023",
+    "KBTimeDiffAgent",
+    "MiCRO2023",
+    "MSCAgent",
+    "PopularAgent",
+    "SmartAgent",
+    "SpaghettiAgent",
+    "TripleEAgent",
     # Dictionaries
     "AGENTS",
     "WRAPPED_AGENTS",

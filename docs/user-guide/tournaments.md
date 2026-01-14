@@ -7,7 +7,7 @@ You can use NegMAS tournament functionality to compare GeniusWeb agents against 
 ```python
 from negmas import SAOMechanism, make_issue, make_os
 from negmas.preferences import LinearAdditiveUtilityFunction as U
-from negmas_geniusweb_bridge import GWHammingAgent, GWShineAgent
+from negmas_geniusweb_bridge import HammingAgent, ShineAgent
 
 def run_tournament():
     """Run a simple tournament between agents."""
@@ -32,8 +32,8 @@ def run_tournament():
         ufun2 = U.random(outcome_space=outcome_space)
         
         # Add agents
-        mechanism.add(GWHammingAgent(name="hamming"), ufun=ufun1)
-        mechanism.add(GWShineAgent(name="shine"), ufun=ufun2)
+        mechanism.add(HammingAgent(name="hamming"), ufun=ufun1)
+        mechanism.add(ShineAgent(name="shine"), ufun=ufun2)
         
         # Run
         state = mechanism.run()
@@ -68,10 +68,10 @@ For more sophisticated tournaments, use NegMAS's built-in tournament functionali
 
 ```python
 from negmas.tournaments import tournament
-from negmas_geniusweb_bridge import GWHammingAgent, GWShineAgent
+from negmas_geniusweb_bridge import HammingAgent, ShineAgent
 
 # Define agent types
-agent_types = [GWHammingAgent, GWShineAgent]
+agent_types = [HammingAgent, ShineAgent]
 
 # Run tournament (simplified example)
 # See NegMAS documentation for full tournament API
@@ -81,11 +81,11 @@ agent_types = [GWHammingAgent, GWShineAgent]
 
 ```python
 from negmas.sao import AspirationNegotiator
-from negmas_geniusweb_bridge import GWHammingAgent
+from negmas_geniusweb_bridge import HammingAgent
 
 # Mix GeniusWeb and NegMAS agents in tournament
 agent_types = [
-    GWHammingAgent,
+    HammingAgent,
     AspirationNegotiator,
 ]
 
