@@ -7,6 +7,20 @@
 - Run test file: `python -m pytest tests/test_negmas_wrapper.py -v`
 - Do not use uv run for running. activate the venv and use its python instead.
 
+## Release Process
+**IMPORTANT**: Do NOT create a GitHub release until AFTER everything is verified working:
+1. Bump version in `pyproject.toml`
+2. Update `uv.lock` with `uv lock`
+3. Commit and push changes to `main`
+4. Wait for GitHub Actions to pass (Test + Deploy Docs)
+5. Create and push tag: `git tag vX.Y.Z && git push origin vX.Y.Z`
+6. Wait for tag-triggered workflows to complete:
+   - Verify PyPI publish succeeds
+   - Verify GitHub Pages deployment succeeds
+7. ONLY THEN create GitHub Release
+
+This workflow allows deleting the tag and retrying without unnecessary version bumps if issues occur.
+
 ## Code Style
 - **Python**: 3.13+, type hints required for function signatures
 - **Imports**: Group as stdlib, third-party (geniusweb, negmas, numpy), local; use `from __future__ import annotations`
