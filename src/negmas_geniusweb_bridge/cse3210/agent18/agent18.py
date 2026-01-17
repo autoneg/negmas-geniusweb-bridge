@@ -44,9 +44,9 @@ class Agent18(DefaultParty):
     - Received bids: very late into the negotiation return one of the best bids out of the 20 last received bids
 
     Note:
-        Modified for negmas-geniusweb-bridge: Added fallback to first bid from AllBidsList
-        when _bid_list is empty in _generateRandomBidAbove(), _getRandomBid(), and _sendReceived()
-        to prevent returning None on small domains.
+        Modified for negmas-geniusweb-bridge: Added fallback to best bid from AllBidsList
+        when _bid_list is empty in _generateRandomBidAbove(), _getRandomBid(), _agreeable(),
+        _socialWelfare(), and _sendReceived() to prevent IndexError on small domains.
     """
 
     def __init__(self, reporter: Reporter = None):
@@ -301,7 +301,7 @@ class Agent18(DefaultParty):
                 bids.append(bid)
         bids = sorted(bids, key=self._opponent_model.getUtility, reverse=True)
         if len(bids) == 0:
-            return self._bid_list[0]
+            return self._get_fallback_bid()
         weights = np.array(
             [
                 float(profile.getUtility(bid))
@@ -316,6 +316,8 @@ class Agent18(DefaultParty):
 
     # Picks one bid from the bid list that maximizes a specific metric
     def _socialWelfare(self, metric):
+        if not self._bid_list:
+            return self._get_fallback_bid()
         best_bid = self._bid_list[0]
         for bid in self._bid_list:
             if metric(best_bid) < metric(bid):
