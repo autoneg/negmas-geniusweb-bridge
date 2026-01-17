@@ -3,7 +3,7 @@ name = "negmas-geniusweb-bridge"
 version = "0.1.2"
 description = "A bridge that allows you to run GeniusWeb agents in negmas SAOMechanism(s)."
 readme = "README.md"
-license = { file = "LICENSE" }
+license = "AGPL-3.0-or-later"
 authors = [
     { name = "Yasser Mohammad", email = "yasserfarouk@gmail.com" }
 ]
