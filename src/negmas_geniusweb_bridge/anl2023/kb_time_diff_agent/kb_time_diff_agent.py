@@ -28,11 +28,10 @@ from geniusweb.progress.ProgressTime import ProgressTime
 from geniusweb.references.Parameters import Parameters
 from tudelft_utilities_logging.ReportToLogger import ReportToLogger
 
-#from .utils.opponent_model import OpponentModel
+# from .utils.opponent_model import OpponentModel
 
 
 class KB_time_diff_Agent(DefaultParty):
-
     def __init__(self):
         super().__init__()
         self.logger: ReportToLogger = self.getReporter()
@@ -52,15 +51,16 @@ class KB_time_diff_Agent(DefaultParty):
         self.cnt_progress: int = 0
         self.start_progress: float = 0
         self.end_progress: float = 0
-        self.estimate_time_diff: float = 0.001 # To prevent the denominator from being zero when dividing
-        self.bidding_time: float = 0.9 # turning point begining to compromise
+        self.estimate_time_diff: float = (
+            0.001  # To prevent the denominator from being zero when dividing
+        )
+        self.bidding_time: float = 0.9  # turning point begining to compromise
 
-        self.opponent_offers = [] # the list of opponent offers
+        self.opponent_offers = []  # the list of opponent offers
 
         self.last_received_bid: Bid = None
-        #self.opponent_model: OpponentModel = None # not use opponent model
+        # self.opponent_model: OpponentModel = None # not use opponent model
         self.logger.log(logging.INFO, "party is initialized")
-
 
     def notifyChange(self, data: Inform):
         """MUST BE IMPLEMENTED
@@ -91,9 +91,8 @@ class KB_time_diff_Agent(DefaultParty):
             self.domain = self.profile.getDomain()
             self.all_bids = AllBidsList(self.domain)
 
-            
-            self.sort_bids_dict = self.sort_bids_dic_for_acceptance() # add
-            
+            self.sort_bids_dict = self.sort_bids_dic_for_acceptance()  # add
+
             profile_connection.close()
 
         # ActionDone informs you of an action (an offer or an accept)
@@ -104,7 +103,6 @@ class KB_time_diff_Agent(DefaultParty):
 
             # ignore action if it is our action
             if actor != self.me:
-
                 # obtain the name of the opponent, cutting of the position ID.
                 self.other = str(actor).rsplit("_", 1)[0]
 
@@ -172,7 +170,7 @@ class KB_time_diff_Agent(DefaultParty):
             bid = cast(Offer, action).getBid()
 
             progress = self.progress.get(time() * 1000)
-            if progress < self.bidding_time: 
+            if progress < self.bidding_time:
                 # update opponent model with bid until bidding_time
                 self.update(bid)
 
@@ -213,11 +211,11 @@ class KB_time_diff_Agent(DefaultParty):
     def accept_condition(self, bid: Bid) -> bool:
         if bid is None:
             return False
-        
+
         # decide second_threshold
         second_threshold = 1 - self.estimate_time_diff
         # decide first_threshold
-        first_threshold = self.decide_first_threshold(second_threshold) 
+        first_threshold = self.decide_first_threshold(second_threshold)
 
         # progress of the negotiation session between 0 and 1 (1 is deadline)
         progress = self.progress.get(time() * 1000)
@@ -225,12 +223,18 @@ class KB_time_diff_Agent(DefaultParty):
         if progress < first_threshold:
             # accepts if the offer is valued above accept_func(progress)
             condition = [self.profile.getUtility(bid) > self.accept_func(progress)]
-        
-        elif(progress >= first_threshold and progress < second_threshold):
+
+        elif progress >= first_threshold and progress < second_threshold:
             # if bid is included in "opponent_offers" and the utility is above 0.3, accept
             # if the utility is above accept_func, accept
-            condition = [bid in self.opponent_offers, self.profile.getUtility(bid) >= 0.3] # parameter
-            condition = [all(condition), self.profile.getUtility(bid) > self.accept_func(progress)]
+            condition = [
+                bid in self.opponent_offers,
+                self.profile.getUtility(bid) >= 0.3,
+            ]  # parameter
+            condition = [
+                all(condition),
+                self.profile.getUtility(bid) > self.accept_func(progress),
+            ]
 
         else:
             # definitely accept
@@ -239,12 +243,13 @@ class KB_time_diff_Agent(DefaultParty):
         return any(condition)
 
     def find_bid(self) -> Bid:
-
         progress = self.progress.get(time() * 1000)
 
         e_remain_num = self.estimate_remain_num(progress)
 
-        if progress >= self.bidding_time or (e_remain_num <= 10 and self.cnt > 0): #parameter
+        if progress >= self.bidding_time or (
+            e_remain_num <= 10 and self.cnt > 0
+        ):  # parameter
             sort_bids_dict = self.sort_bids_dic_for_bidding()
             index = sort_bids_dict[self.cnt2][0]
             best_bid = self.opponent_offers[index]
@@ -252,36 +257,37 @@ class KB_time_diff_Agent(DefaultParty):
 
             return best_bid
 
-        else: 
+        else:
             # if bid utility is lower than accept_func(progress), initialize cnt
             if self.sort_bids_dict[self.cnt][1] < self.accept_func(progress):
-                self.cnt = 0 # initialized
+                self.cnt = 0  # initialized
 
             best_bid = self.all_bids.get(self.sort_bids_dict[self.cnt][0])
             return best_bid
 
     def estimate_remain_num(self, progress: float) -> int:
-        e_remain_num = int((1 - progress)/self.estimate_time_diff)
+        # Prevent division by zero on small domains
+        if self.estimate_time_diff <= 0:
+            self.estimate_time_diff = 0.001
+        e_remain_num = int((1 - progress) / self.estimate_time_diff)
         return e_remain_num
 
     def score_bid(self, bid: Bid) -> float:
-
         our_utility = float(self.profile.getUtility(bid))
 
         return our_utility
 
     def accept_func(self, t: float) -> float:
-        
-        high_threshold = 0.90 # parameter
-        low_threshold = 0.70 # parameter
+        high_threshold = 0.90  # parameter
+        low_threshold = 0.70  # parameter
 
-        a = 10 # sharp or gentle  # defolt = 6
+        a = 10  # sharp or gentle  # defolt = 6
 
-        based_sigmoid = -1/(1 + exp(-a*(t-0.5))) + 1
-        
+        based_sigmoid = -1 / (1 + exp(-a * (t - 0.5))) + 1
+
         y = based_sigmoid * (high_threshold - low_threshold) + low_threshold
 
-        #print(t, y) # print time and result of func
+        # print(t, y) # print time and result of func
 
         return y
 
@@ -296,19 +302,19 @@ class KB_time_diff_Agent(DefaultParty):
             bid = all_bids.get(i)
             bids_dict[i] = self.score_bid(bid)
 
-        sort_bids_dict = sorted(bids_dict.items(), key=lambda x:x[1], reverse=True)
+        sort_bids_dict = sorted(bids_dict.items(), key=lambda x: x[1], reverse=True)
 
-        #print(sort_bids_dict)
+        # print(sort_bids_dict)
 
         return sort_bids_dict
-    
+
     def sort_bids_dic_for_bidding(self) -> Bid:
         bids_dict = {}
         for i in range(len(self.opponent_offers)):
             bid = self.opponent_offers[i]
             bids_dict[i] = self.score_bid(bid)
 
-        sort_bids_dict = sorted(bids_dict.items(), key=lambda x:x[1], reverse=True)
+        sort_bids_dict = sorted(bids_dict.items(), key=lambda x: x[1], reverse=True)
 
         return sort_bids_dict
 
@@ -320,23 +326,23 @@ class KB_time_diff_Agent(DefaultParty):
     def decide_estimate_time_diff(self) -> None:
         self.cnt_progress += 1
         # get the start time
-        if (self.cnt_progress%2) == 1:
+        if (self.cnt_progress % 2) == 1:
             self.start_progress = self.progress.get(time() * 1000)
         # get the end time
-        if (self.cnt_progress%2) == 0:
-            bias = 1.1 # parameter
+        if (self.cnt_progress % 2) == 0:
+            bias = 1.1  # parameter
             self.end_progress = self.progress.get(time() * 1000)
 
-            self.estimate_time_diff = (self.end_progress - self.start_progress)*bias
-            #print(self.estimate_time_diff)
+            self.estimate_time_diff = (self.end_progress - self.start_progress) * bias
+            # print(self.estimate_time_diff)
 
     def decide_first_threshold(self, second_threshold: float) -> float:
-        accept_time = 0.93 # parameter
+        accept_time = 0.93  # parameter
         if second_threshold > accept_time:
-            return accept_time 
+            return accept_time
 
         else:
-            if 1 - self.estimate_time_diff*2 > 0:
-                return 1 - self.estimate_time_diff*2
+            if 1 - self.estimate_time_diff * 2 > 0:
+                return 1 - self.estimate_time_diff * 2
             else:
                 return second_threshold

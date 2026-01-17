@@ -35,8 +35,14 @@ from tudelft.utilities.immutablelist.ImmutableList import ImmutableList
 from decimal import Decimal
 
 
-
 class AgentFO2(DefaultParty):
+    """AgentFO2 negotiation agent.
+
+    Note:
+        Minor modification from original: Added fallback to best bid when no bids
+        are found in the target utility range on small domains.
+    """
+
     def __init__(self, reporter):
         super().__init__(reporter)
         self.logger: ReportToLogger = self.getReporter()
@@ -49,12 +55,12 @@ class AgentFO2(DefaultParty):
         self.other: str = None
         self.settings: Settings = None
         self.storage_dir: str = None
-        self.allbid:BidsWithUtility = None
+        self.allbid: BidsWithUtility = None
 
-        self.pre_opponent_bid_hamming=None
-        self.pre_opponent_utility_log=None
-        self.which_pre_accept=None
-        self.pre_strategy=None
+        self.pre_opponent_bid_hamming = None
+        self.pre_opponent_utility_log = None
+        self.which_pre_accept = None
+        self.pre_strategy = None
 
         self.last_received_bid: Bid = None
         self.logger.log(logging.INFO, "party is initialized")
@@ -70,16 +76,16 @@ class AgentFO2(DefaultParty):
         # a Settings message is the first message that will be send to your
         # agent containing all the information about the negotiation session.
         if isinstance(data, Settings):
-            self.opponent_utility_log=[]
-            self.opponent_bid_hamming=[]
-            self.opponent_strategy=-1
-            self.which_accept=[-1,0,0]
-            self.read_data=True
-            self.strategy_set_FLAG=True
-            self.min=0.5
-            self.accept_utilgoal=0.8
-            self.random_max=1.0
-            self.not_accept=0.05
+            self.opponent_utility_log = []
+            self.opponent_bid_hamming = []
+            self.opponent_strategy = -1
+            self.which_accept = [-1, 0, 0]
+            self.read_data = True
+            self.strategy_set_FLAG = True
+            self.min = 0.5
+            self.accept_utilgoal = 0.8
+            self.random_max = 1.0
+            self.not_accept = 0.05
             self.settings = cast(Settings, data)
             self.me = self.settings.getID()
 
@@ -95,8 +101,8 @@ class AgentFO2(DefaultParty):
             )
             self.profile = profile_connection.getProfile()
             self.domain = self.profile.getDomain()
-            self.issue=self.domain.getIssuesValues()
-            self.allbid = BidsWithUtility.create(cast(LinearAdditive,self.profile))
+            self.issue = self.domain.getIssuesValues()
+            self.allbid = BidsWithUtility.create(cast(LinearAdditive, self.profile))
             profile_connection.close()
 
         # ActionDone informs you of an action (an offer or an accept)
@@ -107,23 +113,25 @@ class AgentFO2(DefaultParty):
             # ignore action if it is our action
             if actor != self.me:
                 # obtain the name of the opponent, cutting of the position ID.
-                #NOTE: Changed by Bram
+                # NOTE: Changed by Bram
                 # self.other = str(actor).split("_")[-2]
                 self.other = str(actor).rsplit("_", 1)[0]
 
                 # read data
-                if self.read_data and os.path.exists(f"{self.storage_dir}/{self.other}.csv"):
-                    with open(f"{self.storage_dir}/{self.other}.csv","r") as f:
-                        reader=csv.reader(f)
-                        l=[row for row in reader]
-                        l=[[float(v) for v in row] for row in l]
-                    self.pre_opponent_utility_log=l[0]
-                    self.pre_opponent_bid_hamming=l[1]
-                    self.which_pre_accept=l[2]
-                    self.pre_strategy=l[3]
-                    self.accept_utilgoal=max(0.8,self.which_pre_accept[1])
+                if self.read_data and os.path.exists(
+                    f"{self.storage_dir}/{self.other}.csv"
+                ):
+                    with open(f"{self.storage_dir}/{self.other}.csv", "r") as f:
+                        reader = csv.reader(f)
+                        l = [row for row in reader]
+                        l = [[float(v) for v in row] for row in l]
+                    self.pre_opponent_utility_log = l[0]
+                    self.pre_opponent_bid_hamming = l[1]
+                    self.which_pre_accept = l[2]
+                    self.pre_strategy = l[3]
+                    self.accept_utilgoal = max(0.8, self.which_pre_accept[1])
                     self.opponent_strategy_search()
-                self.read_data=False
+                self.read_data = False
 
                 # process action done by opponent
                 self.opponent_action(action)
@@ -132,7 +140,7 @@ class AgentFO2(DefaultParty):
             # execute a turn
             self.my_turn()
 
-            #NOTE: ADDED by Bram Renting:
+            # NOTE: ADDED by Bram Renting:
             if isinstance(self.progress, ProgressRounds):
                 self.progress = self.progress.advance()
 
@@ -146,71 +154,75 @@ class AgentFO2(DefaultParty):
             self.logger.log(logging.WARNING, "Ignoring unknown info " + str(data))
 
     def opponent_strategy_search(self):
-        if len(self.pre_opponent_bid_hamming)>=20:
-            x=2
+        if len(self.pre_opponent_bid_hamming) >= 20:
+            x = 2
             while not self.pre_opponent_bid_hamming.count(x):
-                x+=1
-                if x>8:
-                    x=1
+                x += 1
+                if x > 8:
+                    x = 1
                     break
-            if x>=2:
-                ind=self.pre_opponent_bid_hamming.index(x)
+            if x >= 2:
+                ind = self.pre_opponent_bid_hamming.index(x)
             else:
-                ind=-1
+                ind = -1
 
-            if ind>=20:
+            if ind >= 20:
                 # opponent strategy is time-dipendent
-                self.opponent_strategy=0
-            elif ind>=0:
+                self.opponent_strategy = 0
+            elif ind >= 0:
                 # opponent strategy is random or others
-                count=0
-                x=min(20,len(self.pre_opponent_bid_hamming))
+                count = 0
+                x = min(20, len(self.pre_opponent_bid_hamming))
                 for i in range(x):
-                    if self.pre_opponent_bid_hamming[i]>=2:
-                        count+=1
-                if count>=10:
-                    self.opponent_strategy=1
+                    if self.pre_opponent_bid_hamming[i] >= 2:
+                        count += 1
+                if count >= 10:
+                    self.opponent_strategy = 1
                 else:
-                    self.opponent_strategy=2
+                    self.opponent_strategy = 2
             else:
                 # opponent strategy is others
-                self.opponent_strategy=2
+                self.opponent_strategy = 2
         else:
-            self.opponent_strategy=self.pre_strategy[0]
-            if self.opponent_strategy==-1:
-                self.opponent_strategy=2
+            self.opponent_strategy = self.pre_strategy[0]
+            if self.opponent_strategy == -1:
+                self.opponent_strategy = 2
 
     def my_strategy_setting(self):
-        self.opponent_one=self.profile.getUtility(self.last_received_bid)
+        self.opponent_one = self.profile.getUtility(self.last_received_bid)
         if self.which_pre_accept:
-            if self.opponent_strategy==0: # when opponent strategy is time-dependent
-                if self.which_pre_accept[0]==0: # pre-accept is me
-                    pre_acc_util=self.which_pre_accept[2]
-                    sup_util=self.utility_suppose(pre_acc_util)
-                    self.min=min(sup_util,pre_acc_util)
-                elif self.which_pre_accept[0]==1: # pre-accept is opponent
-                    pre_acc_util=self.which_pre_accept[2]
-                    sup_util=self.utility_suppose(pre_acc_util)
-                    self.min=max(sup_util,pre_acc_util)
-                    self.min=min(self.min,0.9)
-                else: # pre-accept is unknown or None
-                    self.min=self.pre_strategy[1]-0.05
-            elif self.opponent_strategy==1: # when opponent strategy is random
-                if self.which_pre_accept[0]<=0: # pre-accept is me or None or unkown
-                    self.accept_utilgoal=max(max(self.pre_opponent_utility_log),self.which_pre_accept[1])
-                    self.not_accept=1/2.718
-                    self.random_max=0
-                elif self.which_pre_accept[0]==1: # pre-accept is opponent
-                    self.not_accept=0.1
-                    self.accept_utilgoal=max(max(self.pre_opponent_utility_log),self.which_pre_accept[1])
-            elif self.opponent_strategy==2: # when opponent strategy is others
-                if self.which_accept[0]>=0: # pre-negotiation is accepted
-                    self.min=min(self.pre_strategy[1]+0.05,0.8)
+            if self.opponent_strategy == 0:  # when opponent strategy is time-dependent
+                if self.which_pre_accept[0] == 0:  # pre-accept is me
+                    pre_acc_util = self.which_pre_accept[2]
+                    sup_util = self.utility_suppose(pre_acc_util)
+                    self.min = min(sup_util, pre_acc_util)
+                elif self.which_pre_accept[0] == 1:  # pre-accept is opponent
+                    pre_acc_util = self.which_pre_accept[2]
+                    sup_util = self.utility_suppose(pre_acc_util)
+                    self.min = max(sup_util, pre_acc_util)
+                    self.min = min(self.min, 0.9)
+                else:  # pre-accept is unknown or None
+                    self.min = self.pre_strategy[1] - 0.05
+            elif self.opponent_strategy == 1:  # when opponent strategy is random
+                if self.which_pre_accept[0] <= 0:  # pre-accept is me or None or unkown
+                    self.accept_utilgoal = max(
+                        max(self.pre_opponent_utility_log), self.which_pre_accept[1]
+                    )
+                    self.not_accept = 1 / 2.718
+                    self.random_max = 0
+                elif self.which_pre_accept[0] == 1:  # pre-accept is opponent
+                    self.not_accept = 0.1
+                    self.accept_utilgoal = max(
+                        max(self.pre_opponent_utility_log), self.which_pre_accept[1]
+                    )
+            elif self.opponent_strategy == 2:  # when opponent strategy is others
+                if self.which_accept[0] >= 0:  # pre-negotiation is accepted
+                    self.min = min(self.pre_strategy[1] + 0.05, 0.8)
                 else:
-                    self.min=max(self.pre_strategy[1]-0.05,0.4)
+                    self.min = max(self.pre_strategy[1] - 0.05, 0.4)
 
-    def utility_suppose(self,util): # supposed pareto front
-        return min(1.0,-float(util)+1.0+float(self.opponent_one))
+    def utility_suppose(self, util):  # supposed pareto front
+        return min(1.0, -float(util) + 1.0 + float(self.opponent_one))
 
     def getCapabilities(self) -> Capabilities:
         """MUST BE IMPLEMENTED
@@ -251,17 +263,16 @@ class AgentFO2(DefaultParty):
         """
         # if it is an offer, set the last received bid
         if isinstance(action, Offer):
-
             bid = cast(Offer, action).getBid()
             self.opponent_utility_log.append(self.profile.getUtility(bid))
-            count=0
+            count = 0
             # ハミング距離
             if len(self.opponent_bid_hamming):
                 for issue in self.issue.keys():
-                    now_value=bid.getValue(issue)
-                    pre_value=self.last_received_bid.getValue(issue)
-                    if not now_value==pre_value:
-                        count+=1
+                    now_value = bid.getValue(issue)
+                    pre_value = self.last_received_bid.getValue(issue)
+                    if not now_value == pre_value:
+                        count += 1
                 self.opponent_bid_hamming.append(count)
             else:
                 self.opponent_bid_hamming.append(0)
@@ -270,15 +281,15 @@ class AgentFO2(DefaultParty):
             self.last_received_bid = bid
             if self.strategy_set_FLAG:
                 self.my_strategy_setting()
-                self.strategy_set_FLAG=False
-        elif isinstance(action,Accept):
-            self.which_accept[0]=1
-            bid=cast(Accept,action).getBid()
-            self.which_accept[1]=self.profile.getUtility(bid)
+                self.strategy_set_FLAG = False
+        elif isinstance(action, Accept):
+            self.which_accept[0] = 1
+            bid = cast(Accept, action).getBid()
+            self.which_accept[1] = self.profile.getUtility(bid)
             if self.strategy_set_FLAG:
-                self.which_accept[2]=self.which_accept[1]
+                self.which_accept[2] = self.which_accept[1]
             else:
-                self.which_accept[2]=self.utility_suppose(self.which_accept[1])
+                self.which_accept[2] = self.utility_suppose(self.which_accept[1])
 
     def my_turn(self):
         """This method is called when it is our turn. It should decide upon an action
@@ -287,14 +298,13 @@ class AgentFO2(DefaultParty):
         bid = self._makeBid()
         myAction: Action
         if bid == None or (
-            self.last_received_bid != None
-            and self.accept_condition(bid)
+            self.last_received_bid != None and self.accept_condition(bid)
         ):
             # if bid==null we failed to suggest next bid.
             myAction = Accept(self.me, self.last_received_bid)
-            self.which_accept[0]=0
-            self.which_accept[1]=self.profile.getUtility(self.last_received_bid)
-            self.which_accept[2]=self.utility_suppose(self.which_accept[1])
+            self.which_accept[0] = 0
+            self.which_accept[1] = self.profile.getUtility(self.last_received_bid)
+            self.which_accept[2] = self.utility_suppose(self.which_accept[1])
         else:
             myAction = Offer(self.me, bid)
         self.getConnection().send(myAction)
@@ -306,12 +316,11 @@ class AgentFO2(DefaultParty):
         """
 
         with open(f"{self.storage_dir}/{self.other}.csv", "w") as f:
-            writer=csv.writer(f)
+            writer = csv.writer(f)
             writer.writerow(self.opponent_utility_log)
             writer.writerow(self.opponent_bid_hamming)
             writer.writerow(self.which_accept)
-            writer.writerow([self.opponent_strategy,self.min])
-
+            writer.writerow([self.opponent_strategy, self.min])
 
     def accept_condition(self, bid: Bid) -> bool:
         if bid is None:
@@ -320,22 +329,21 @@ class AgentFO2(DefaultParty):
         # progress of the negotiation session between 0 and 1 (1 is deadline)
         progress = self.progress.get(time() * 1000)
 
-        util=self.profile.getUtility(self.last_received_bid)
+        util = self.profile.getUtility(self.last_received_bid)
 
         conditions = [
-            Decimal(1.02)*util+Decimal(0.04)>self.profile.getUtility(bid),
-            util>self.accept_utilgoal and self.not_accept<=progress,
-            self.random_max<util and self.not_accept<=progress,
-            progress>0.95 and util>=self.utility_suppose(util),
-            util>0.85 and self.utility_suppose(util)<=util
+            Decimal(1.02) * util + Decimal(0.04) > self.profile.getUtility(bid),
+            util > self.accept_utilgoal and self.not_accept <= progress,
+            self.random_max < util and self.not_accept <= progress,
+            progress > 0.95 and util >= self.utility_suppose(util),
+            util > 0.85 and self.utility_suppose(util) <= util,
         ]
 
-        if self.not_accept>progress:
-            if self.random_max<util:
-                self.random_max=util
+        if self.not_accept > progress:
+            if self.random_max < util:
+                self.random_max = util
 
         return any(conditions)
-
 
     def _makeBid(self) -> Bid:
         """
@@ -350,12 +358,22 @@ class AgentFO2(DefaultParty):
             self.getMin(),
             self.getMax(),
         )
-        
-        options: ImmutableList[Bid] = self.allbid.getBids(Interval(utilityGoal-Decimal(0.05),min(self.getMax(),utilityGoal+Decimal(0.05))))
+
+        options: ImmutableList[Bid] = self.allbid.getBids(
+            Interval(
+                utilityGoal - Decimal(0.05),
+                min(self.getMax(), utilityGoal + Decimal(0.05)),
+            )
+        )
         if options.size() == 0:
             # if we can't find good bid
-            options = self.allbid.getBids(Interval(utilityGoal,self.getMax()))
-        # pick a random one.
+            options = self.allbid.getBids(Interval(utilityGoal, self.getMax()))
+        # pick a random one, or return best bid if no options found
+        if options.size() == 0:
+            # Fallback to best bid on small domains
+            options = self.allbid.getBids(self.allbid.getRange())
+            if options.size() == 0:
+                return None
         return options.get(randint(0, options.size() - 1))
 
     def getE(self) -> float:
@@ -382,10 +400,7 @@ class AgentFO2(DefaultParty):
         @return the utility goal for this time and e value
         """
 
-        
         ft1 = Decimal(1)
         if e != 0:
             ft1 = round(Decimal(1 - pow(t, 1 / e)), 6)  # defaults ROUND_HALF_UP
         return max(min((minUtil + (maxUtil - minUtil) * ft1), maxUtil), minUtil)
-
-

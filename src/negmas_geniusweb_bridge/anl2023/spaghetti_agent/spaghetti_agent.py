@@ -269,15 +269,37 @@ class Agent37(DefaultParty):
             self.all_bids = self.generate_bids(domain)
             # Create a deque with 100 random samples from the generated bid list
 
-            sample = list(
-                np.random.choice(
-                    self.all_bids, min(100, len(self.all_bids)), replace=False
+            # Fallback if no bids match criteria
+            if len(self.all_bids) == 0:
+                all_bids_list = list(AllBidsList(domain))
+                if all_bids_list:
+                    self.all_bids = sorted(
+                        all_bids_list,
+                        key=lambda bid: self.profile.getUtility(bid),
+                        reverse=True,
+                    )[:10]  # Take top 10 bids
+
+            sample = (
+                list(
+                    np.random.choice(
+                        self.all_bids, min(100, len(self.all_bids)), replace=False
+                    )
                 )
+                if len(self.all_bids) > 0
+                else []
             )
             sample = sorted(
                 sample, key=lambda bid: self.profile.getUtility(bid), reverse=True
             )
             self.deque = deque(sample)
+
+        # Fallback to generating new bids if deque is empty
+        if len(self.deque) == 0:
+            domain = self.profile.getDomain()
+            all_bids_list = list(AllBidsList(domain))
+            if all_bids_list:
+                return max(all_bids_list, key=lambda bid: self.profile.getUtility(bid))
+            return None
 
         return self.deque.popleft()
 

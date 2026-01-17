@@ -53,7 +53,15 @@ NUMBER_OF_GOALS = 5
 
 class AmbitiousAgent(DefaultParty):
     """
-    Template of a Python geniusweb agent.
+    ANL 2023 AmbitiousAgent that learns over negotiation sessions.
+
+    Uses epsilon-greedy algorithm for learning and adaptive bidding strategies.
+    Supports ProgressTime protocol with time-based acceptance conditions.
+
+    Note:
+        This agent requires ProgressTime (not ProgressRounds) and uses getStart()
+        method which may not be available in all wrappers. The agent is marked
+        as having known issues when used with round-based protocols.
     """
 
     def __init__(self):
@@ -163,7 +171,10 @@ class AmbitiousAgent(DefaultParty):
 
     # SLM (Stop Learning Mechanism)
     def SLM(self, saved_data, condition_data, opp):
-        if (saved_data[opp][-2][0] == 0 and saved_data[opp][-1][0] > 0) or ((saved_data[opp][-2][1] == saved_data[opp][-1][1]) and (saved_data[opp][-2][2] == saved_data[opp][-1][2])):
+        if (saved_data[opp][-2][0] == 0 and saved_data[opp][-1][0] > 0) or (
+            (saved_data[opp][-2][1] == saved_data[opp][-1][1])
+            and (saved_data[opp][-2][2] == saved_data[opp][-1][2])
+        ):
             self.condition_d = condition_data[opp] + saved_data[opp][-1][0]
             if 0 <= self.condition_d < 1:
                 self.condition_d = 1
@@ -176,13 +187,17 @@ class AmbitiousAgent(DefaultParty):
 
     # LSN ( Learning over Negotiation Sessions = LNS )
     def LSN(self, saved_data, condition_data, opp):
-        if saved_data[opp][-1][0] > 0 and saved_data[opp][-1][0] < self.good_agreement_u:
+        if (
+            saved_data[opp][-1][0] > 0
+            and saved_data[opp][-1][0] < self.good_agreement_u
+        ):
             self.min = saved_data[opp][-1][1] + self.increasing_e
             self.e = saved_data[opp][-1][2] - self.increasing_e
 
         if saved_data[opp][-1][0] == 0:
-            self.condition_d = condition_data[opp] - \
-                (1-self.ff(saved_data[opp], saved_data[opp][-1][1]))
+            self.condition_d = condition_data[opp] - (
+                1 - self.ff(saved_data[opp], saved_data[opp][-1][1])
+            )
             if self.condition_d < 0:
                 self.condition_d = 0
             self.min = saved_data[opp][-1][1] - self.decreasing_e
@@ -198,34 +213,43 @@ class AmbitiousAgent(DefaultParty):
         for dl in DataList[self.other]:
             num += len(dl)
             m_sum += sum(dl)
-        return float(m_sum)/num
+        return float(m_sum) / num
 
     # set parameters using LSN, SLM and Alg2
     def set_parameters(self, opp):
-
         # Calculate AVG time consumption according of all previous NS (2023)
-        if not self.other or not os.path.exists(f"{self.storage_dir}/time_consumption_data_{self.other}"):
+        if not self.other or not os.path.exists(
+            f"{self.storage_dir}/time_consumption_data_{self.other}"
+        ):
             self.avg_time_consumption_all_ns = 0
         else:
             self.avg_time_consumption_all_ns = self.get_avg_all_list(
-                self.return_saved_data(f"time_consumption_data_{self.other}"))
+                self.return_saved_data(f"time_consumption_data_{self.other}")
+            )
             if self.avg_time_consumption_all_ns > 0:
-                self.ratio = (self.get_domain_size(self.domain)) / (15000 *
-                                                                    (self.progress.getDuration()/(self.avg_time_consumption_all_ns*1000)))
+                self.ratio = (self.get_domain_size(self.domain)) / (
+                    15000
+                    * (
+                        self.progress.getDuration()
+                        / (self.avg_time_consumption_all_ns * 1000)
+                    )
+                )
 
         # If there is no negotiation exprience with opponent (opp) so set min=0.6 and e=0.05
-        if not self.other or not os.path.exists(f"{self.storage_dir}/m_data_{self.other}"):
+        if not self.other or not os.path.exists(
+            f"{self.storage_dir}/m_data_{self.other}"
+        ):
             self.min = 0.6
             self.e = 0.05
         else:
-            self.AC2023_effect = self.return_saved_data(
-                f'AC2023_data_{self.other}')
-            saved_data = self.return_saved_data(f'm_data_{self.other}')
-            condition_data = self.return_saved_data(f'c_data_{self.other}')
+            self.AC2023_effect = self.return_saved_data(f"AC2023_data_{self.other}")
+            saved_data = self.return_saved_data(f"m_data_{self.other}")
+            condition_data = self.return_saved_data(f"c_data_{self.other}")
             if (saved_data is not None) and (condition_data is not None):
                 if opp in saved_data:
-                    self.good_agreement_u = self.good_agreement_u - \
-                        (len(saved_data[opp]) * 0.01)
+                    self.good_agreement_u = self.good_agreement_u - (
+                        len(saved_data[opp]) * 0.01
+                    )
                     if self.good_agreement_u < 0.7:
                         self.good_agreement_u = 0.7
                     if len(saved_data[opp]) >= 2:
@@ -247,7 +271,7 @@ class AmbitiousAgent(DefaultParty):
             self.min = 0.7
 
         # Tune e using Ratio
-        self.e += self.ratio/self.alpha_ratio
+        self.e += self.ratio / self.alpha_ratio
 
         if self.e < 0.005:
             self.e = 0.005
@@ -255,14 +279,14 @@ class AmbitiousAgent(DefaultParty):
             self.e = 0.1
 
         # Tune max using Ratio
-        self.max -= self.alpha_ratio*self.ratio
+        self.max -= self.alpha_ratio * self.ratio
         if self.max <= self.min:
             self.max = self.min + 0.001
 
     def return_saved_data(self, file_name):
         # for reading also binary mode is important
         if os.path.exists(f"{self.storage_dir}/{file_name}"):
-            file = open(f"{self.storage_dir}/{file_name}", 'rb')
+            file = open(f"{self.storage_dir}/{file_name}", "rb")
             saved_data = pickle.load(file)
             file.close()
             return saved_data
@@ -305,7 +329,8 @@ class AmbitiousAgent(DefaultParty):
             ns_repetation_2023_saved_data = 0
             if self.other is not None:
                 ns_repetation_2023_saved_data = len(
-                    self.return_saved_data((f'm_data_{self.other}'))[self.other])
+                    self.return_saved_data((f"m_data_{self.other}"))[self.other]
+                )
             else:
                 ns_repetation_2023_saved_data = None
 
@@ -313,9 +338,17 @@ class AmbitiousAgent(DefaultParty):
             if ns_repetation_2023_saved_data is not None:
                 if ns_repetation_2023_saved_data == ns_repetation_2023_domain:
                     self.ns_repetation_2023 = ns_repetation_2023_domain
-                elif ns_repetation_2023_domain > ns_repetation_2023_saved_data and abs(ns_repetation_2023_domain - ns_repetation_2023_saved_data) <= 4:
+                elif (
+                    ns_repetation_2023_domain > ns_repetation_2023_saved_data
+                    and abs(ns_repetation_2023_domain - ns_repetation_2023_saved_data)
+                    <= 4
+                ):
                     self.ns_repetation_2023 = ns_repetation_2023_domain
-                elif ns_repetation_2023_domain > ns_repetation_2023_saved_data and abs(ns_repetation_2023_domain - ns_repetation_2023_saved_data) > 4:
+                elif (
+                    ns_repetation_2023_domain > ns_repetation_2023_saved_data
+                    and abs(ns_repetation_2023_domain - ns_repetation_2023_saved_data)
+                    > 4
+                ):
                     self.ns_repetation_2023 = ns_repetation_2023_saved_data
                 elif ns_repetation_2023_domain < ns_repetation_2023_saved_data:
                     self.ns_repetation_2023 = ns_repetation_2023_saved_data
@@ -329,9 +362,12 @@ class AmbitiousAgent(DefaultParty):
             # **************************************************************
 
             # initialize FrequencyOpponentModel
-            self.opponent_model = FrequencyOpponentModel.FrequencyOpponentModel.create().With(
-                newDomain=self.profile.getDomain(),
-                newResBid=self.profile.getReservationBid())
+            self.opponent_model = (
+                FrequencyOpponentModel.FrequencyOpponentModel.create().With(
+                    newDomain=self.profile.getDomain(),
+                    newResBid=self.profile.getReservationBid(),
+                )
+            )
 
             profile_connection.close()
 
@@ -345,8 +381,7 @@ class AmbitiousAgent(DefaultParty):
             if isinstance(action, Accept):
                 # print(str(actor).rsplit("_", 1)[0], '=>', cast(Offer, action).getBid())
                 agreement_bid = cast(Offer, action).getBid()
-                self.agreement_utility = float(
-                    self.profile.getUtility(agreement_bid))
+                self.agreement_utility = float(self.profile.getUtility(agreement_bid))
                 self.who_accepted = str(actor).rsplit("_", 1)[0]
 
             # ignore action if it is our action
@@ -373,8 +408,7 @@ class AmbitiousAgent(DefaultParty):
             self.logger.log(logging.INFO, "party is terminating:")
             super().terminate()
         else:
-            self.logger.log(logging.WARNING,
-                            "Ignoring unknown info " + str(data))
+            self.logger.log(logging.WARNING, "Ignoring unknown info " + str(data))
 
     def opponent_action(self, action):
         """Process an action that was received from the opponent.
@@ -383,24 +417,35 @@ class AmbitiousAgent(DefaultParty):
         """
         # if it is an offer, set the last received bid
         if isinstance(action, Offer):
-
             bid = cast(Offer, action).getBid()
 
             # update opponent model with bid
             self.opponent_model = self.opponent_model.WithAction(
-                action=action, progress=self.progress)
+                action=action, progress=self.progress
+            )
             # set bid as last received
             self.last_received_bid = bid
             # self.received_bids.append(bid)
-            self.received_bid_details.append(BidDetail(bid, float(
-                self.profile.getUtility(bid)),  self.progress.get(time() * 1000)))
+            self.received_bid_details.append(
+                BidDetail(
+                    bid,
+                    float(self.profile.getUtility(bid)),
+                    self.progress.get(time() * 1000),
+                )
+            )
 
             if self.best_received_bid is None:
-                self.best_received_bid = BidDetail(bid, float(
-                    self.profile.getUtility(self.last_received_bid)))
-            elif float(self.profile.getUtility(self.last_received_bid)) > self.best_received_bid.getUtility():
-                self.best_received_bid = BidDetail(self.last_received_bid, float(
-                    self.profile.getUtility(self.last_received_bid)))
+                self.best_received_bid = BidDetail(
+                    bid, float(self.profile.getUtility(self.last_received_bid))
+                )
+            elif (
+                float(self.profile.getUtility(self.last_received_bid))
+                > self.best_received_bid.getUtility()
+            ):
+                self.best_received_bid = BidDetail(
+                    self.last_received_bid,
+                    float(self.profile.getUtility(self.last_received_bid)),
+                )
 
     def my_turn(self):
         """This method is called when it is our turn. It should decide upon an action
@@ -413,7 +458,7 @@ class AmbitiousAgent(DefaultParty):
             self.t2 = time()
 
         if self.t1 != 0 and self.t2 != 0 and self.t2 > self.t1:
-            self.time_consumption_list.append(self.t2-self.t1)
+            self.time_consumption_list.append(self.t2 - self.t1)
             self.t1 = self.t2
             self.t2 = 0
 
@@ -425,15 +470,20 @@ class AmbitiousAgent(DefaultParty):
         remaining_time = 0
 
         remaining_time = (
-            time() - float(datetime.timestamp(self.progress.getStart())))*1000
+            time() - float(datetime.timestamp(self.progress.getStart()))
+        ) * 1000
 
         # calculate opponent average offering time (current NS)
-        if (len(self.time_consumption_list) > 0):
-            avg_offer_time = ((sum(self.time_consumption_list) /
-                              len(self.time_consumption_list)))*1000
+        if len(self.time_consumption_list) > 0:
+            avg_offer_time = (
+                sum(self.time_consumption_list) / len(self.time_consumption_list)
+            ) * 1000
 
         # investigate if the time passed of the negotiation session is near to deadline
-        if (remaining_time+(self.alpha_ac_2023*avg_offer_time+self.betta_ac_2023) > self.progress.getDuration()):
+        if (
+            remaining_time + (self.alpha_ac_2023 * avg_offer_time + self.betta_ac_2023)
+            > self.progress.getDuration()
+        ):
             if self.accept_condition_2023(self.last_received_bid):
                 self.send_action(Accept(self.me, self.last_received_bid))
             else:
@@ -448,8 +498,7 @@ class AmbitiousAgent(DefaultParty):
                 else:
                     # if not, send the best bid that we received ever
                     if self.accept_condition_2023(self.best_received_bid.getBid()):
-                        action = Offer(
-                            self.me, self.best_received_bid.getBid())
+                        action = Offer(self.me, self.best_received_bid.getBid())
                         # self.my_bids.append(next_bid)
                         self.my_bid_details.append(self.best_received_bid)
 
@@ -473,7 +522,8 @@ class AmbitiousAgent(DefaultParty):
                 action = Offer(self.me, next_bid)
                 # self.my_bids.append(next_bid)
                 self.my_bid_details.append(
-                    BidDetail(next_bid, float(self.profile.getUtility(next_bid))))
+                    BidDetail(next_bid, float(self.profile.getUtility(next_bid)))
+                )
 
             # send the action
             self.send_action(action)
@@ -485,10 +535,10 @@ class AmbitiousAgent(DefaultParty):
         """
         # **************************************************
         if self.other:
-            c_file_name = "c_data_"+self.other
+            c_file_name = "c_data_" + self.other
             c_data = {}
             if os.path.isfile(f"{self.storage_dir}/{c_file_name}"):
-                dbfile_c = open(f"{self.storage_dir}/{c_file_name}", 'rb')
+                dbfile_c = open(f"{self.storage_dir}/{c_file_name}", "rb")
                 c_data = pickle.load(dbfile_c)
                 dbfile_c.close()
 
@@ -496,14 +546,14 @@ class AmbitiousAgent(DefaultParty):
                 os.remove(f"{self.storage_dir}/{c_file_name}")
 
             c_data[self.other] = self.condition_d
-            dbfile_c = open(f"{self.storage_dir}/{c_file_name}", 'ab')
+            dbfile_c = open(f"{self.storage_dir}/{c_file_name}", "ab")
             pickle.dump(c_data, dbfile_c)
             dbfile_c.close()
 
-            m_file_name = "m_data_"+self.other
+            m_file_name = "m_data_" + self.other
             m_data = {}
             if os.path.isfile(f"{self.storage_dir}/{m_file_name}"):
-                dbfile = open(f"{self.storage_dir}/{m_file_name}", 'rb')
+                dbfile = open(f"{self.storage_dir}/{m_file_name}", "rb")
                 m_data = pickle.load(dbfile)
                 dbfile.close()
 
@@ -514,9 +564,11 @@ class AmbitiousAgent(DefaultParty):
             if self.other in m_data:
                 m_data[self.other].append(m_tuple)
             else:
-                m_data[self.other] = [m_tuple, ]
+                m_data[self.other] = [
+                    m_tuple,
+                ]
 
-            dbfile = open(f"{self.storage_dir}/{m_file_name}", 'ab')
+            dbfile = open(f"{self.storage_dir}/{m_file_name}", "ab")
 
             # source, destination
             pickle.dump(m_data, dbfile)
@@ -526,36 +578,33 @@ class AmbitiousAgent(DefaultParty):
             # ////////////////////// Save AVG time consumption ///////////////////////
             # ////////////////////////////////////////////////////////////////////////
             if len(self.time_consumption_list) == 0:
-                self.time_consumption_list.append(
-                    self.progress.getDuration()/1000.0)
-            time_consumption2023_file_name = f'time_consumption_data_{self.other}'
+                self.time_consumption_list.append(self.progress.getDuration() / 1000.0)
+            time_consumption2023_file_name = f"time_consumption_data_{self.other}"
             time_consumption2023_data = {}
             if os.path.isfile(f"{self.storage_dir}/{time_consumption2023_file_name}"):
                 dbfile = open(
-                    f"{self.storage_dir}/{time_consumption2023_file_name}", 'rb')
+                    f"{self.storage_dir}/{time_consumption2023_file_name}", "rb"
+                )
                 time_consumption2023_data = pickle.load(dbfile)
                 dbfile.close()
 
             if os.path.exists(f"{self.storage_dir}/{time_consumption2023_file_name}"):
-                os.remove(
-                    f"{self.storage_dir}/{time_consumption2023_file_name}")
+                os.remove(f"{self.storage_dir}/{time_consumption2023_file_name}")
 
             if self.other in time_consumption2023_data:
-                time_consumption2023_data[self.other].append(
-                    self.time_consumption_list)
+                time_consumption2023_data[self.other].append(self.time_consumption_list)
             else:
                 time_consumption2023_data[self.other] = [
-                    self.time_consumption_list, ]
+                    self.time_consumption_list,
+                ]
 
-            dbfile = open(
-                f"{self.storage_dir}/{time_consumption2023_file_name}", 'ab')
+            dbfile = open(f"{self.storage_dir}/{time_consumption2023_file_name}", "ab")
 
             # source, destination
             pickle.dump(time_consumption2023_data, dbfile)
             dbfile.close()
 
     def accept_condition(self, received_bid: Bid, next_bid) -> bool:
-
         if received_bid is None:
             return False
 
@@ -565,14 +614,23 @@ class AmbitiousAgent(DefaultParty):
         if self.profile.getReservationBid() is None:
             reservation = 0.0
         else:
-            reservation = self.profile.getUtility(
-                self.profile.getReservationBid())
+            reservation = self.profile.getUtility(self.profile.getReservationBid())
 
         received_bid_utility = self.profile.getUtility(received_bid)
-        condition1 = received_bid_utility >= self.threshold_acceptance and received_bid_utility >= reservation
-        condition2 = progress > self.near_deadline and received_bid_utility > self.min and received_bid_utility >= reservation
-        condition3 = self.alpha*float(received_bid_utility) + self.betta >= float(
-            self.profile.getUtility(next_bid)) and received_bid_utility >= reservation
+        condition1 = (
+            received_bid_utility >= self.threshold_acceptance
+            and received_bid_utility >= reservation
+        )
+        condition2 = (
+            progress > self.near_deadline
+            and received_bid_utility > self.min
+            and received_bid_utility >= reservation
+        )
+        condition3 = (
+            self.alpha * float(received_bid_utility) + self.betta
+            >= float(self.profile.getUtility(next_bid))
+            and received_bid_utility >= reservation
+        )
 
         return condition1 or condition2 or condition3
 
@@ -586,17 +644,17 @@ class AmbitiousAgent(DefaultParty):
 
         utility_goals = []
         for i in range(NUMBER_OF_GOALS):
-            utility_goals.append(self.threshold_low+s*i)
+            utility_goals.append(self.threshold_low + s * i)
         utility_goals.append(self.threshold_high)
 
         options: ImmutableList[Bid] = self._extendedspace.getBids(
-            Decimal(random.choice(utility_goals)))
+            Decimal(random.choice(utility_goals))
+        )
 
         opponent_utilities = []
         for option in options:
             if self.opponent_model != None:
-                opp_utility = float(
-                    self.opponent_model.getUtility(option))
+                opp_utility = float(self.opponent_model.getUtility(option))
                 if opp_utility > 0:
                     opponent_utilities.append(opp_utility)
                 else:
@@ -619,18 +677,20 @@ class AmbitiousAgent(DefaultParty):
 
     # ************************************************************
     def f(self, t, k, e):
-        return k + (1-k)*(t**(1/e))
+        return k + (1 - k) * (t ** (1 / e))
 
     def p(self, min1, max1, e, t):
-        return min1 + (1-self.f(t, 0, e))*(max1-min1)
+        return min1 + (1 - self.f(t, 0, e)) * (max1 - min1)
 
     def cal_thresholds(self):
         progress = self.progress.get(time() * 1000)
-        self.threshold_high = self.p(self.min+0.1, self.max, self.e, progress)
+        self.threshold_high = self.p(self.min + 0.1, self.max, self.e, progress)
         self.threshold_acceptance = self.p(
-            self.min+0.1, self.max, self.e, progress) - (0.1*((progress+0.0000001)))
-        self.threshold_low = self.p(self.min+0.1, self.max, self.e, progress) - \
-            (0.1*((progress+0.0000001))) * abs(math.sin(progress * 60))
+            self.min + 0.1, self.max, self.e, progress
+        ) - (0.1 * (progress + 0.0000001))
+        self.threshold_low = self.p(self.min + 0.1, self.max, self.e, progress) - (
+            0.1 * (progress + 0.0000001)
+        ) * abs(math.sin(progress * 60))
 
     # ================================================================
     def get_domain_size(self, domain: Domain):
@@ -638,6 +698,7 @@ class AmbitiousAgent(DefaultParty):
         for issue in domain.getIssues():
             domain_size *= domain.getValues(issue).size()
         return domain_size
+
     # ================================================================
 
     # give a description of your agent
@@ -679,7 +740,6 @@ class AmbitiousAgent(DefaultParty):
     ######################################### 2023 Codes ######################################
     ###########################################################################################
     def accept_condition_2023(self, received_bid):
-
         if received_bid is None:
             return False
 
@@ -687,11 +747,14 @@ class AmbitiousAgent(DefaultParty):
         if self.profile.getReservationBid() is None:
             reservation = 0.0
         else:
-            reservation = self.profile.getUtility(
-                self.profile.getReservationBid())
+            reservation = self.profile.getUtility(self.profile.getReservationBid())
 
-        p = self.p(self.ac_min_2023, self.min, self.ac_e_2023, float(
-            self.ns_repetation_2023/self.max_num_ns_repetation_2023))
+        p = self.p(
+            self.ac_min_2023,
+            self.min,
+            self.ac_e_2023,
+            float(self.ns_repetation_2023 / self.max_num_ns_repetation_2023),
+        )
 
         recieved_bid_u = self.profile.getUtility(received_bid)
 
@@ -719,7 +782,7 @@ class BidDetail:
         return self.__time
 
     def __repr__(self) -> str:
-        return f'{self.__bid}: {self.__utiltiy}'
+        return f"{self.__bid}: {self.__utiltiy}"
 
 
 class ExtendedUtilSpace:

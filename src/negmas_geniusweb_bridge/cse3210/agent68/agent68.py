@@ -30,8 +30,13 @@ from time import time as clock
 
 class Agent68(DefaultParty):
     """
-    Template agent that offers random bids until a bid with sufficient utility is offered.
+    CSE3210 negotiation agent with three-phase bidding strategy.
+
+    Note:
+        Modified for negmas-geniusweb-bridge: Added None checks for _best_backup_bid
+        in bidding.py to prevent comparison errors at negotiation start.
     """
+
     PHASE_ONE_ROUNDS = (0, 10)  # Reconnaissance
     PHASE_TWO_ROUNDS = (11, 70)  # Main negotiation
 
@@ -51,7 +56,7 @@ class Agent68(DefaultParty):
         self._e1 = 0.3
         self._e2 = 0.3
         self._e3 = 0.1
-        
+
     def notifyChange(self, info: Inform):
         """This is the entry point of all interaction with your agent after is has been initialised.
 
@@ -73,7 +78,9 @@ class Agent68(DefaultParty):
                 info.getProfile().getURI(), self.getReporter()
             )
 
-            self._opponent = self._opponent.With(self._profile.getProfile().getDomain(), None)
+            self._opponent = self._opponent.With(
+                self._profile.getProfile().getDomain(), None
+            )
 
             self._getParams()
             self._bidding.initBidding(cast(Settings, info), self.getReporter())
@@ -84,7 +91,6 @@ class Agent68(DefaultParty):
 
             # if it is an offer, set the last received bid
             if isinstance(action, Offer):
-
                 offer: Offer = cast(Offer, action)
                 # print(self._profile.getProfile().getReservationBid())
                 if offer.getActor() != self._settings.getID():
@@ -124,23 +130,18 @@ class Agent68(DefaultParty):
     # terminates the agent and its connections
     # leave it as it is for this competition
     def terminate(self):
-
         super().terminate()
         if self._profile is not None:
             self._profile.close()
             self._profile = None
 
-    
-
     def _getParams(self):
         params = self._settings.getParameters()
-        
+
         self._e1 = params.getDouble("e1", 0.3, 0.0, 2.0)
         self._e2 = params.getDouble("e2", 0.3, 0.0, 2.0)
         self._e3 = params.getDouble("e3", 0.1, 0.0, 2.0)
-        
-        
-    
+
     def _updateRound(self, info: Inform):
         """
         Update {@link #progress}, depending on the protocol and last received
@@ -168,7 +169,7 @@ class Agent68(DefaultParty):
         self._bidding._updateUtilSpace()
         self._progress.get(round(clock() * 1000))
         # check if the last received offer if the opponent is good enough
-        #TODO try changing params and integrating with acceptance strat. Try filtered combinations
+        # TODO try changing params and integrating with acceptance strat. Try filtered combinations
         if self._progress.get(round(clock() * 1000)) < 0.4:
             self._bidding.setE(self._e1)
         elif self._progress.get(round(clock() * 1000)) < 0.8:
@@ -186,4 +187,3 @@ class Agent68(DefaultParty):
 
         # send the actionp
         return action
-

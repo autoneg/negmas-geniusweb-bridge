@@ -17,8 +17,11 @@ from geniusweb.progress.Progress import Progress
 
 from .acceptance_strategy import CombiAcceptanceStrategy, BetterThanEstimated
 from .utility import AgentUtility
-from .bidding_strategy import BiddingStrategyProbalistic, BiddingStrategyDeterministic, \
-    AgressiveBiddingStrategy
+from .bidding_strategy import (
+    BiddingStrategyProbalistic,
+    BiddingStrategyDeterministic,
+    AgressiveBiddingStrategy,
+)
 from geniusweb.profileconnection.ProfileConnectionFactory import (
     ProfileConnectionFactory,
 )
@@ -70,9 +73,6 @@ class TemplateAgent(DefaultParty):
             self._acceptance.set_progress(self._progress)
             self._utility.set_progress(self._progress)
 
-
-
-
         # ActionDone is an action send by an opponent (an offer or an accept)
         elif isinstance(info, ActionDone):
             action: Action = cast(ActionDone, info).getAction()
@@ -115,8 +115,6 @@ class TemplateAgent(DefaultParty):
             self._profile.close()
             self._profile = None
 
-    
-
     # give a description of your agent
     def getDescription(self) -> str:
         return "Agent33"
@@ -143,8 +141,9 @@ class TemplateAgent(DefaultParty):
         # send the action
         return action
 
-    def _isGood(self,
-                bid: Bid) -> bool:  # adjust acceptance criteria based on how many turns left, accept if last bid is better than our next bid
+    def _isGood(
+        self, bid: Bid
+    ) -> bool:  # adjust acceptance criteria based on how many turns left, accept if last bid is better than our next bid
         if bid is None:
             return False
         return self._acceptance.accept(bid)
@@ -154,21 +153,18 @@ class TemplateAgent(DefaultParty):
 
 
 class DeterministicAgent(TemplateAgent):
-
     def __init__(self):
         super(DeterministicAgent, self).__init__()
         self._strategy = BiddingStrategyDeterministic(utility=self._utility)
 
 
 class ProbabilisticAgent(TemplateAgent):
-
     def __init__(self):
         super(ProbabilisticAgent, self).__init__()
         self._strategy = BiddingStrategyProbalistic(utility=self._utility)
 
 
 class AgressiveAtStartAgent(TemplateAgent):
-
     def __init__(self, reporter: Reporter = None):
         super().__init__(reporter)
         self._strategy = AgressiveBiddingStrategy(utility=self._utility)
@@ -180,52 +176,81 @@ class AgressiveAtStartAgent(TemplateAgent):
         self._updateStrategy()
         return super(AgressiveAtStartAgent, self)._myTurn()
 
-
     def _updateStrategy(self):
         if not self.switched:
             opponent_issue_percentage = self._utility.get_opponent_issue_count()
             opponent_issue_weights = self._utility.get_weight_heuristic()
             if self._last_received_bid is not None:
-                rating = self._utility.rate_bid(self._last_received_bid, opponent_issue_percentage, opponent_issue_weights)
+                rating = self._utility.rate_bid(
+                    self._last_received_bid,
+                    opponent_issue_percentage,
+                    opponent_issue_weights,
+                )
                 if rating > 0.9:
                     self.ratings = 0
                 else:
                     self.ratings += 1
 
             if self.ratings == 3 and self._progress.get(time.time() * 1000) > 0.25:
-                self._strategy = BiddingStrategyDeterministic(utility=self._utility, profile=self._profile)
+                self._strategy = BiddingStrategyDeterministic(
+                    utility=self._utility, profile=self._profile
+                )
                 self.switched = True
         else:
             opponent_issue_percentage = self._utility.get_opponent_issue_count()
             opponent_issue_weights = self._utility.get_weight_heuristic()
             if self._last_received_bid is not None:
-                rating = self._utility.rate_bid(self._last_received_bid, opponent_issue_percentage, opponent_issue_weights)
+                rating = self._utility.rate_bid(
+                    self._last_received_bid,
+                    opponent_issue_percentage,
+                    opponent_issue_weights,
+                )
                 if rating > 0.9:
                     self.ratings += 1
                 else:
                     self.ratings = 0
 
             if self.ratings == 3:
-                self._strategy = BiddingStrategyDeterministic(utility=self._utility, profile=self._profile)
+                self._strategy = BiddingStrategyDeterministic(
+                    utility=self._utility, profile=self._profile
+                )
+
 
 class AgressiveAtStartWithOpponentAcceptance(AgressiveAtStartAgent):
-
     def __init__(self):
         super(AgressiveAtStartWithOpponentAcceptance, self).__init__()
-        self._acceptance = BetterThanEstimated(fall_off_util=1, fall_off_difference=2, utility=self._utility)
+        self._acceptance = BetterThanEstimated(
+            fall_off_util=1, fall_off_difference=2, utility=self._utility
+        )
 
 
 class Agent33(AgressiveAtStartAgent):
+    """Agent33 negotiation agent.
+
+    Note:
+        Minor modification from original: Added recursion limit to _findBid()
+        to prevent infinite recursion on small domains where no bid is "good enough."
+    """
 
     def __init__(self, reporter: Reporter = None):
         super().__init__(reporter)
         self._strategy = AgressiveBiddingStrategy(utility=self._utility)
-        self._acceptance = BetterThanEstimated(fall_off_util=1, fall_off_difference=2, utility=self._utility)
-
+        self._acceptance = BetterThanEstimated(
+            fall_off_util=1, fall_off_difference=2, utility=self._utility
+        )
+        self._find_bid_recursion_count = 0
 
     def _findBid(self) -> Bid:
         bid = self._strategy.get_bid()
+        # Prevent infinite recursion on small domains
+        if self._find_bid_recursion_count > 5:
+            self._find_bid_recursion_count = 0
+            return bid
         if not self._isGood(bid):
-            self._strategy = BiddingStrategyProbalistic(utility=self._utility, profile=self._profile)
+            self._find_bid_recursion_count += 1
+            self._strategy = BiddingStrategyProbalistic(
+                utility=self._utility, profile=self._profile
+            )
             return self._findBid()
+        self._find_bid_recursion_count = 0
         return bid

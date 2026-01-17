@@ -52,8 +52,17 @@ tSplit: int = 40
 tPhase: float = 0.2
 
 
-
 class CompromisingAgent(DefaultParty):
+    """ANL 2022 agent that learns opponent utility and threshold.
+
+    This agent handles the Learn protocol and learns the utility function
+    and threshold of the opponent for adaptive bidding strategies.
+
+    Note:
+        Modified for negmas-geniusweb-bridge: Added fallback to optimalBid
+        when bid search returns None in myTurn() to prevent 'Action cannot be None' errors.
+    """
+
     def __init__(self, reporter):
         super().__init__(reporter)
         self.logger: ReportToLogger = self.getReporter()
@@ -100,9 +109,9 @@ class CompromisingAgent(DefaultParty):
 
     def notifyChange(self, data: Inform):
         """
-                Args:
-                    data (Inform): Contains either a request for action or information.
-                """
+        Args:
+            data (Inform): Contains either a request for action or information.
+        """
         try:
             # a Settings message is the first message that will be send to your
             # agent containing all the information about the negotiation session.
@@ -119,7 +128,7 @@ class CompromisingAgent(DefaultParty):
                 # execute a turn
                 self.myTurn()
 
-                #NOTE: ADDED by Bram Renting:
+                # NOTE: ADDED by Bram Renting:
                 if isinstance(self.progress, ProgressRounds):
                     self.progress = self.progress.advance()
 
@@ -164,19 +173,29 @@ class CompromisingAgent(DefaultParty):
             try:
                 with open(self.negotiationDataPath, "w") as f:
                     # w means overwritten
-                    json.dump(self.negotiationData.__dict__, default=lambda o: o.__dict__, indent=5, fp=f)
-
+                    json.dump(
+                        self.negotiationData.__dict__,
+                        default=lambda o: o.__dict__,
+                        indent=5,
+                        fp=f,
+                    )
 
             except:
-                self.logger.log(logging.ERROR, "Failed to write negotiation data to disk")
+                self.logger.log(
+                    logging.ERROR, "Failed to write negotiation data to disk"
+                )
 
         # Write the learned data to the path provided.
         if not (self.learnedDataPath == None or self.learnedData == None):
             try:
                 with open(self.learnedDataPath, "w") as f:
                     # w means overwritten
-                    json.dump(self.learnedData.__dict__, default=lambda o: o.__dict__, indent=9, fp=f)
-
+                    json.dump(
+                        self.learnedData.__dict__,
+                        default=lambda o: o.__dict__,
+                        indent=9,
+                        fp=f,
+                    )
 
             except:
                 self.logger.log(logging.ERROR, "Failed to learned data to disk")
@@ -197,7 +216,9 @@ class CompromisingAgent(DefaultParty):
                 self.opponentName = str(actor).rsplit("_", 1)[0]
 
                 # path depend on opponent name
-                self.negotiationDataPath = self.getPath("negotiationData", self.opponentName)
+                self.negotiationDataPath = self.getPath(
+                    "negotiationData", self.opponentName
+                )
                 self.learnedDataPath = self.getPath("learnedData", self.opponentName)
 
                 # update and load learnedData
@@ -207,23 +228,39 @@ class CompromisingAgent(DefaultParty):
                 self.negotiationData.setOpponentName(self.opponentName)
 
                 # avg opponent offer utility
-                self.opThreshold = self.learnedData.getSmoothThresholdOverTime() \
-                    if self.learnedData != None else None
+                self.opThreshold = (
+                    self.learnedData.getSmoothThresholdOverTime()
+                    if self.learnedData != None
+                    else None
+                )
                 if not (self.opThreshold == None):
                     for i in range(tSplit):
-                        self.opThreshold[i] = self.opThreshold[i] if self.opThreshold[i] > 0 else self.opThreshold[
-                            i - 1]
+                        self.opThreshold[i] = (
+                            self.opThreshold[i]
+                            if self.opThreshold[i] > 0
+                            else self.opThreshold[i - 1]
+                        )
 
                 # max offer the opponent reject
-                self.opReject = self.learnedData.getSmoothRejectOverTime() \
-                    if self.learnedData != None else None
+                self.opReject = (
+                    self.learnedData.getSmoothRejectOverTime()
+                    if self.learnedData != None
+                    else None
+                )
                 if not (self.opReject == None):
                     for i in range(tSplit):
-                        self.opReject[i] = self.opReject[i] if self.opReject[i] > 0 else self.opReject[
-                            i - 1]
+                        self.opReject[i] = (
+                            self.opReject[i]
+                            if self.opReject[i] > 0
+                            else self.opReject[i - 1]
+                        )
 
                 # decay rate of threshold function
-                self.alpha = self.learnedData.getOpponentAlpha() if self.learnedData != None else 0.0
+                self.alpha = (
+                    self.learnedData.getOpponentAlpha()
+                    if self.learnedData != None
+                    else 0.0
+                )
                 self.alpha = self.alpha if self.alpha > 0.0 else defualtAlpha
 
             # Process the action of the opponent.
@@ -257,7 +294,9 @@ class CompromisingAgent(DefaultParty):
         # preferences over it.
         try:
             # the profile contains the preferences of the agent over the domain
-            profile_connection = ProfileConnectionFactory.create(data.getProfile().getURI(), self.getReporter())
+            profile_connection = ProfileConnectionFactory.create(
+                data.getProfile().getURI(), self.getReporter()
+            )
             self.domain = profile_connection.getProfile().getDomain()
 
             # Create a Issues-Values frequency map
@@ -336,30 +375,35 @@ class CompromisingAgent(DefaultParty):
             self.negotiationData.addBidUtil(utilVal)
 
     def processAgreements(self, agreements: Agreements):
-
-        """ This method is called when the negotiation has finished. It can process the"
-              final agreement.
-         """
+        """This method is called when the negotiation has finished. It can process the"
+        final agreement.
+        """
         # Check if we reached an agreement (walking away or passing the deadline
         # results in no agreement)
         if agreements.getMap() != None and not (agreements.getMap() == {}):
             # Get the bid that is agreed upon and add it's value to our negotiation data
             agreement: Bid = list(agreements.getMap().values())[0]
-            self.negotiationData.addAgreementUtil(float(self.utilitySpace.getUtility(agreement)))
+            self.negotiationData.addAgreementUtil(
+                float(self.utilitySpace.getUtility(agreement))
+            )
             self.negotiationData.setOpponentUtil(self.calcOpValue(agreement))
 
         # negotiation failed
         else:
             if not (self.bestOfferBid == None):
-                self.negotiationData.addAgreementUtil(float(self.utilitySpace.getUtility(self.bestOfferBid)))
+                self.negotiationData.addAgreementUtil(
+                    float(self.utilitySpace.getUtility(self.bestOfferBid))
+                )
 
             # update opponent reject list
             if self.lastOfferBid != None:
-                self.negotiationData.addRejectUtil(tSplit - 1, self.calcOpValue(self.lastOfferBid))
+                self.negotiationData.addRejectUtil(
+                    tSplit - 1, self.calcOpValue(self.lastOfferBid)
+                )
 
         # update the opponent offers map, regardless of achieving agreement or not
         try:
-            self.negotiationData.updateOpponentOffers(self.opSum, self.opCounter);
+            self.negotiationData.updateOpponentOffers(self.opSum, self.opCounter)
         except:
             self.logger.log(logging.ERROR, "error processAgreements")
 
@@ -369,14 +413,20 @@ class CompromisingAgent(DefaultParty):
 
         # save average of the last avgSplit offers (only when frequency table is stabilized)
         if self.isNearNegotiationEnd() > 0:
-            index: int = (int)((tSplit - 1) / (1 - tPhase) * (self.progress.get(int(time.time() * 1000)) - tPhase))
+            index: int = (int)(
+                (tSplit - 1)
+                / (1 - tPhase)
+                * (self.progress.get(int(time.time() * 1000)) - tPhase)
+            )
 
             if self.lastReceivedBid != None:
                 self.opSum[index] += self.calcOpValue(self.lastReceivedBid)
                 self.opCounter[index] += 1
 
             if self.lastOfferBid != None:
-                self.negotiationData.addRejectUtil(index, self.calcOpValue(self.lastOfferBid))
+                self.negotiationData.addRejectUtil(
+                    index, self.calcOpValue(self.lastOfferBid)
+                )
 
             # evaluate the offer and accept or give counter-offer
         if self.isGood(self.lastReceivedBid):
@@ -390,8 +440,9 @@ class CompromisingAgent(DefaultParty):
 
             if self.bestOfferBid == None:
                 self.bestOfferBid = self.lastReceivedBid
-            elif self.lastReceivedBid != None and self.utilitySpace.getUtility(self.lastReceivedBid) > self.utilitySpace \
-                    .getUtility(self.bestOfferBid):
+            elif self.lastReceivedBid != None and self.utilitySpace.getUtility(
+                self.lastReceivedBid
+            ) > self.utilitySpace.getUtility(self.bestOfferBid):
                 self.bestOfferBid = self.lastReceivedBid
 
             isNearNegotiationEnd = self.isNearNegotiationEnd()
@@ -402,15 +453,18 @@ class CompromisingAgent(DefaultParty):
                     i: int64 = randint(0, self.allBidList.size())
                     bid = self.allBidList.get(i)
 
-                bid = bid if (self.isGood(
-                    bid)) else self.optimalBid  # if the last bid isn't good, offer (default) the optimal bid
+                bid = (
+                    bid if (self.isGood(bid)) else self.optimalBid
+                )  # if the last bid isn't good, offer (default) the optimal bid
 
             elif isNearNegotiationEnd == 1:
                 if self.progress.get(int(time.time() * 1000)) > 0.95:
                     maxOpponentUtility: float = 0.0
                     maxBid: Bid = None
                     i = 0
-                    while i < 10000 and self.progress.get(int(time.time() * 1000)) < 0.99:
+                    while (
+                        i < 10000 and self.progress.get(int(time.time() * 1000)) < 0.99
+                    ):
                         i: int64 = randint(0, self.allBidList.size())
                         bid = self.allBidList.get(i)
                         if self.isGood(bid) and self.isOpGood(bid):
@@ -434,10 +488,18 @@ class CompromisingAgent(DefaultParty):
                                 maxBid = bid
                     bid = maxBid
 
-                bid = bid if self.isGood(
-                    bid) else self.optimalBid  # if the last bid isn't good, offer (default) the optimal bid
-                bid = self.bestOfferBid if (self.progress.get(int(time.time() * 1000)) > 0.99) else bid
+                bid = (
+                    bid if self.isGood(bid) else self.optimalBid
+                )  # if the last bid isn't good, offer (default) the optimal bid
+                bid = (
+                    self.bestOfferBid
+                    if (self.progress.get(int(time.time() * 1000)) > 0.99)
+                    else bid
+                )
 
+            # Fallback to optimalBid if bid is still None (can happen on small domains)
+            if bid is None:
+                bid = self.optimalBid
 
             # Create offer action
             action = Offer(self.me, bid)
@@ -447,24 +509,33 @@ class CompromisingAgent(DefaultParty):
         self.getConnection().send(action)
 
     def isGood(self, bid: Bid):
-        """ The method checks if a bid is good.
-          param bid the bid to check
-          return true iff bid is good for us.
-          """
+        """The method checks if a bid is good.
+        param bid the bid to check
+        return true iff bid is good for us.
+        """
         if bid == None:
             return False
-        maxVlue: float = 0.95 * float(
-            self.utilitySpace.getUtility(self.optimalBid)) if not self.optimalBid == None else 0.95
-        avgMaxUtility: float = self.learnedData.getAvgMaxUtility() \
-            if self.learnedData != None \
+        maxVlue: float = (
+            0.95 * float(self.utilitySpace.getUtility(self.optimalBid))
+            if not self.optimalBid == None
+            else 0.95
+        )
+        avgMaxUtility: float = (
+            self.learnedData.getAvgMaxUtility()
+            if self.learnedData != None
             else self.avgUtil
+        )
 
-        self.utilThreshold = maxVlue \
-                             - (maxVlue - 0.55 * self.avgUtil - 0.4 * avgMaxUtility + 0.5 * pow(self.stdUtil, 2)) \
-                             * (math.exp(self.alpha * self.progress.get(int(time.time() * 1000))) - 1) \
-                             / (math.exp(self.alpha) - 1)
+        self.utilThreshold = maxVlue - (
+            maxVlue
+            - 0.55 * self.avgUtil
+            - 0.4 * avgMaxUtility
+            + 0.5 * pow(self.stdUtil, 2)
+        ) * (math.exp(self.alpha * self.progress.get(int(time.time() * 1000))) - 1) / (
+            math.exp(self.alpha) - 1
+        )
 
-        if (self.utilThreshold < self.MIN_UTILITY):
+        if self.utilThreshold < self.MIN_UTILITY:
             self.utilThreshold = self.MIN_UTILITY
 
         return float(self.utilitySpace.getUtility(bid)) >= self.utilThreshold
@@ -512,11 +583,19 @@ class CompromisingAgent(DefaultParty):
             return False
 
         value: float = self.calcOpValue(bid)
-        index: int = int(((tSplit - 1) / (1 - tPhase) * (self.progress.get(int(
-            time.time() * 1000)) - tPhase)))
+        index: int = int(
+            (
+                (tSplit - 1)
+                / (1 - tPhase)
+                * (self.progress.get(int(time.time() * 1000)) - tPhase)
+            )
+        )
         # change
-        opThreshold: float = max(max(2 * self.opThreshold[index] - 1, self.opReject[index]),
-                                 0.2) if self.opThreshold != None and self.opReject != None else 0.6
+        opThreshold: float = (
+            max(max(2 * self.opThreshold[index] - 1, self.opReject[index]), 0.2)
+            if self.opThreshold != None and self.opReject != None
+            else 0.6
+        )
         return value > opThreshold
 
     def updateFreqMap(self, bid: Bid):
@@ -528,7 +607,7 @@ class CompromisingAgent(DefaultParty):
                 v: Value = bid.getValue(s)
 
                 vs: str = self.valueToStr(v, p)
-                p.vList[vs] = (p.vList.get(vs) + 1)
+                p.vList[vs] = p.vList.get(vs) + 1
 
     def valueToStr(self, v: Value, p: Pair):
         v_str: str = ""

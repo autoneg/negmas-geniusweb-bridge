@@ -27,10 +27,13 @@ from geniusweb.progress.ProgressRounds import ProgressRounds
 from tudelft_utilities_logging.Reporter import Reporter
 
 
-
 class Agent67(DefaultParty):
     """
-    Template agent that offers random bids until a bid with sufficient utility is offered.
+    AgentBernie: Using frequency analysis model with walk-down strategy and boulware-style concession.
+
+    Note:
+        Modified for negmas-geniusweb-bridge: Added bounds checking in walk_down_strategy()
+        to prevent index out of range when walk_down_counter exceeds sorted_bid length.
     """
 
     def __init__(self, reporter: Reporter = None):
@@ -42,7 +45,7 @@ class Agent67(DefaultParty):
         self.best_bid: Bid = None
         self.calculated_bid: bool = False
         self.opponent_issues = {}
-        self.opp_history_bids = ({})
+        self.opp_history_bids = {}
         self.sorted_bid = []
 
         self.walk_down_counter = 0
@@ -122,8 +125,6 @@ class Agent67(DefaultParty):
             self._profile.close()
             self._profile = None
 
-    
-
     """
     AgentBernie : Using frequency analysis model with walk-down strategy and boulware-style concession.
     """
@@ -133,7 +134,6 @@ class Agent67(DefaultParty):
 
     # execute a turn
     def _myTurn(self):
-
         # Sort the highest bid in decreasing order
         if len(self.sorted_bid) <= 0:
             self.sort_high_bids()
@@ -179,9 +179,11 @@ class Agent67(DefaultParty):
 
         # 75% of the rounds towards the deadline have passed
         # Using acceptance strategy here called : AC_NEXT
-        return progress > 0.75 \
-            and profile.getUtility(bid) > profile.getUtility(self._findBid()) \
+        return (
+            progress > 0.75
+            and profile.getUtility(bid) > profile.getUtility(self._findBid())
             and self.batna(bid)
+        )
 
     #####################################################################################
     ############################## BIDDING STRATEGY #####################################
@@ -189,14 +191,14 @@ class Agent67(DefaultParty):
 
     def _findBid(self) -> Bid:
         """
-        Finds the best offer for us and the opponent to 
+        Finds the best offer for us and the opponent to
         reach desirable agreeement and results.
         """
         profile = self._profile.getProfile()
 
         # Walk-down strategy, stop until offered utility value
         # is below lambda parameter
-        if(self.whether_walk_down):
+        if self.whether_walk_down:
             walk_down_bid = self.walk_down_strategy()
             util_bid = profile.getUtility(walk_down_bid)
 
@@ -214,15 +216,18 @@ class Agent67(DefaultParty):
         Walk-down strategy : Starting from the highest until
         the utility is below lambda parameter.
         """
+        # Bounds check: prevent index out of range on small domains
+        if self.walk_down_counter >= len(self.sorted_bid):
+            self.walk_down_counter = len(self.sorted_bid) - 1
         walk_down_bid = self.sorted_bid[self.walk_down_counter]
         self.curr_walk_down_bid = walk_down_bid
-        self.walk_down_counter += + 1
+        self.walk_down_counter += +1
 
         return walk_down_bid
 
     def batna(self, bid):
         """
-        Checking whether the bid's utility is 
+        Checking whether the bid's utility is
         bove batna utility value.
         """
         profile = self._profile.getProfile()
@@ -235,21 +240,23 @@ class Agent67(DefaultParty):
 
     def find_best_offer(self) -> Bid:
         """
-        Finding 
+        Finding
         """
         for bid in self.sorted_bid:
             found = True
 
             for issue, value in bid.getIssueValues().items():
                 num_issue = self.issue_to_numeric[issue]
-                if self.accept_range(issue, value) \
-                        and self.batna(bid) \
-                        and self.opp_profile[num_issue][1] != -1:
+                if (
+                    self.accept_range(issue, value)
+                    and self.batna(bid)
+                    and self.opp_profile[num_issue][1] != -1
+                ):
                     continue
                 else:
                     found = False
                     break
-            if(found):
+            if found:
                 return bid
         curr_walk_down_bid = self.walk_down_strategy()
         return curr_walk_down_bid
@@ -269,7 +276,6 @@ class Agent67(DefaultParty):
         """
         bid_dict = bid.getIssueValues().items()
         for issue, value in bid_dict:
-
             # If issue doesn't exist in the categorical-numerical mapping
             # in dictionary "map_issues_to_numeric_and_initialize" then
             # initialize. Same for values
@@ -291,15 +297,18 @@ class Agent67(DefaultParty):
                 self.opp_profile[issue] = ()
 
             # Mapping from categorival to numerical with values from the issue
-            numerical_values = [self.value_to_numeric[value]
-                                for value in values]
+            numerical_values = [self.value_to_numeric[value] for value in values]
 
-            if(len(numerical_values) == 1):
+            if len(numerical_values) == 1:
                 self.opp_profile[issue] = (
-                    max(numerical_values, key=numerical_values.count), -1)
+                    max(numerical_values, key=numerical_values.count),
+                    -1,
+                )
             else:
                 self.opp_profile[issue] = (
-                    max(numerical_values, key=numerical_values.count), np.var(numerical_values, ddof=1))
+                    max(numerical_values, key=numerical_values.count),
+                    np.var(numerical_values, ddof=1),
+                )
 
     def accept_range(self, issue, value):
         """
@@ -345,7 +354,9 @@ class Agent67(DefaultParty):
         for issue in recentIssues:
             if issue in self.opponent_issues:
                 if recentIssuesValues[issue] in self.opponent_issues[issue]:
-                    self.opponent_issues[issue] = self.opponent_issues[issue][recentIssuesValues[issue]] + 1
+                    self.opponent_issues[issue] = (
+                        self.opponent_issues[issue][recentIssuesValues[issue]] + 1
+                    )
                 else:
                     self.opponent_issues[issue][recentIssuesValues[issue]] = 1
             else:
@@ -362,7 +373,7 @@ class Agent67(DefaultParty):
         """
         Returns the best bid
         """
-        if(not self.calculated_bid):
+        if not self.calculated_bid:
             domain = self._profile.getProfile().getDomain()
             all_bids = AllBidsList(domain)
             profile = self._profile.getProfile()
@@ -371,7 +382,7 @@ class Agent67(DefaultParty):
 
             for x in all_bids:
                 curr_utility = profile.getUtility(x)
-                if(best_utility < curr_utility):
+                if best_utility < curr_utility:
                     bid = x
                     best_utility = curr_utility
 
@@ -387,7 +398,7 @@ class Agent67(DefaultParty):
         Sorting bids based on the utility values
         """
         temp_tuple_bid = []
-        if(not self.calculated_bid):
+        if not self.calculated_bid:
             domain = self._profile.getProfile().getDomain()
             all_bids = AllBidsList(domain)
             profile = self._profile.getProfile()
@@ -395,8 +406,7 @@ class Agent67(DefaultParty):
             for x in all_bids:
                 temp_tuple_bid.append((profile.getUtility(x), x))
 
-            temp_tuple_bid = sorted(
-                temp_tuple_bid, key=lambda x: x[0], reverse=True)
+            temp_tuple_bid = sorted(temp_tuple_bid, key=lambda x: x[0], reverse=True)
 
             self.calculated_bid = True
             self.sorted_bid = [bid[1] for bid in temp_tuple_bid]

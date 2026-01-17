@@ -42,6 +42,11 @@ class Agent18(DefaultParty):
                  from the offer
     - Social welfare: late into the negotiation optimizes social welfare if opponent still has not conceded much
     - Received bids: very late into the negotiation return one of the best bids out of the 20 last received bids
+
+    Note:
+        Modified for negmas-geniusweb-bridge: Added fallback to first bid from AllBidsList
+        when _bid_list is empty in _generateRandomBidAbove(), _getRandomBid(), and _sendReceived()
+        to prevent returning None on small domains.
     """
 
     def __init__(self, reporter: Reporter = None):
@@ -62,11 +67,25 @@ class Agent18(DefaultParty):
         # 2 -> Minimum target utility | Agreeable
         # 3 -> Factor of the time dependent utility | Agreeable
         # 4,5,6 -> Time splits for changing strategies
-        self.thresholds: list[float] = [0.99, 0.980278280105376, 0.9586147509907781, 3.846489410609955,
-                                    0.5702511194471804, 0.8702511194471804, 0.99]
+        self.thresholds: list[float] = [
+            0.99,
+            0.980278280105376,
+            0.9586147509907781,
+            3.846489410609955,
+            0.5702511194471804,
+            0.8702511194471804,
+            0.99,
+        ]
         # Ranges for the thresholds for optimization purposes
-        self.threshold_checks = [[0.8, 1], [0.7, 1], [0.7, 1], [2, 4],
-                                 [0.3, 0.7], [0.7, 0.9], [0.9, 1]]
+        self.threshold_checks = [
+            [0.8, 1],
+            [0.7, 1],
+            [0.7, 1],
+            [2, 4],
+            [0.3, 0.7],
+            [0.7, 0.9],
+            [0.9, 1],
+        ]
 
     def notifyChange(self, info: Inform):
         """This is the entry point of all interaction with your agent after is has been initialised.
@@ -89,11 +108,14 @@ class Agent18(DefaultParty):
                 info.getProfile().getURI(), self.getReporter()
             )
 
-            self._bid_list = sorted(AllBidsList(self._profile.getProfile().getDomain()),
-                                    key=self._profile.getProfile().getUtility, reverse=True)
-            self._opponent_model = freq_opp_mod.FrequencyOpponentModel(self._profile.getProfile().getDomain(), {}, 0,
-                                                                       None).With(
-                self._profile.getProfile().getDomain(), None)
+            self._bid_list = sorted(
+                AllBidsList(self._profile.getProfile().getDomain()),
+                key=self._profile.getProfile().getUtility,
+                reverse=True,
+            )
+            self._opponent_model = freq_opp_mod.FrequencyOpponentModel(
+                self._profile.getProfile().getDomain(), {}, 0, None
+            ).With(self._profile.getProfile().getDomain(), None)
         # ActionDone is an action send by an opponent (an offer or an accept)
         elif isinstance(info, ActionDone):
             action: Action = cast(ActionDone, info).getAction()
@@ -104,7 +126,9 @@ class Agent18(DefaultParty):
                 if self._last_sent_bid is None or bid != self._last_sent_bid:
                     self._last_received_bid = bid
                     self._received_bids.append(self._last_received_bid)
-                    self._opponent_model = self._opponent_model.WithAction(action, self._progress)
+                    self._opponent_model = self._opponent_model.WithAction(
+                        action, self._progress
+                    )
         # YourTurn notifies you that it is your turn to act
         elif isinstance(info, YourTurn):
             action = self._myTurn()
@@ -138,8 +162,6 @@ class Agent18(DefaultParty):
             self._profile.close()
             self._profile = None
 
-    
-
     # give a description of your agent
     def getDescription(self) -> str:
         return """
@@ -154,9 +176,14 @@ class Agent18(DefaultParty):
     # execute a turn
     def _myTurn(self):
         # Update best received utility
-        if self._last_received_bid is not None and self._best_received_utility < self._profile.getProfile().getUtility(
-                self._last_received_bid):
-            self._best_received_utility = self._profile.getProfile().getUtility(self._last_received_bid)
+        if (
+            self._last_received_bid is not None
+            and self._best_received_utility
+            < self._profile.getProfile().getUtility(self._last_received_bid)
+        ):
+            self._best_received_utility = self._profile.getProfile().getUtility(
+                self._last_received_bid
+            )
         # Find the next bid to send
         next_sent_bid = self._findBid()
 
@@ -185,7 +212,9 @@ class Agent18(DefaultParty):
         progress = self._progress.get(time.time() * 1000)
 
         # Create an acceptance profile and check the metrics used
-        ac = AcceptanceStrategy(progress, profile, self._received_bids, next_sent_bid, self._last_sent_bid)
+        ac = AcceptanceStrategy(
+            progress, profile, self._received_bids, next_sent_bid, self._last_sent_bid
+        )
         return ac.combi_max_w(self.thresholds[0], 1, 0)
 
     # Finds the next bid to send to the opponent
@@ -199,29 +228,61 @@ class Agent18(DefaultParty):
         opponent = self._opponent_model
         # Random Walker above specific threshold
         if progress < self.thresholds[4]:
-            return self._generateRandomBidAbove(lambda x: x >= self.thresholds[1], self._bid_list, profile.getUtility)
+            return self._generateRandomBidAbove(
+                lambda x: x >= self.thresholds[1], self._bid_list, profile.getUtility
+            )
         # Agreeable agent based on ANAC 2018 agent
         if progress < self.thresholds[5]:
             return self._agreeable()
         # Agent that maximizes the nash product
         if progress < self.thresholds[6]:
-            return self._socialWelfare(lambda x: (self._profile.getProfile().getUtility(x)) * opponent.getUtility(x))
+            return self._socialWelfare(
+                lambda x: (self._profile.getProfile().getUtility(x))
+                * opponent.getUtility(x)
+            )
         # Send bids that we received and maximize our utility
         return self._sendReceived()
+
+    def _get_fallback_bid(self) -> Bid:
+        """Get a fallback bid when no suitable bid is found.
+
+        Returns the best bid from _bid_list, or generates a random bid from AllBidsList
+        if _bid_list is empty (can happen on small domains after removing offered bids).
+        """
+        if self._bid_list:
+            return self._bid_list[0]
+        # Generate fallback from AllBidsList when _bid_list is exhausted
+        all_bids = AllBidsList(self._profile.getProfile().getDomain())
+        profile = self._profile.getProfile()
+        best_bid = all_bids.get(0)
+        best_util = profile.getUtility(best_bid)
+        for i in range(min(100, all_bids.size())):
+            bid = all_bids.get(i)
+            util = profile.getUtility(bid)
+            if util > best_util:
+                best_bid = bid
+                best_util = util
+        return best_bid
 
     # Function to generate a random bid using a specific thresholding function
     # threshold_function -> lambda function that returns a boolean used to filter bids
     # bid_list -> list of bids to chose from
     # utility_function -> lambda function that computes the utility of a bid
     def _generateRandomBidAbove(self, threshold_function, bid_list, utility_function):
+        # Fallback if bid_list is empty
+        if not bid_list:
+            return self._get_fallback_bid()
         for _ in range(50):
             bid = self._getRandomBid(bid_list)
             if threshold_function(utility_function(bid)):
                 return bid
-        return self._bid_list[0]
+        return self._get_fallback_bid()
 
     # Generate a random element of the input list
     def _getRandomBid(self, bid_list) -> Bid:
+        # Fallback if bid_list is empty
+        if not bid_list:
+            return self._get_fallback_bid()
         return bid_list[randint(0, len(bid_list) - 1)]
 
     # Finds the next bid in the behaviour of the agreeable agent
@@ -229,7 +290,10 @@ class Agent18(DefaultParty):
     # - selects one of them based on the social welfare (roulette selection)
     def _agreeable(self) -> Bid:
         # To collect enough data start by sending the best offers for us
-        target_utility = min(self.thresholds[2], (1 - self._progress.get(time.time() * 1000)) * self.thresholds[3])
+        target_utility = min(
+            self.thresholds[2],
+            (1 - self._progress.get(time.time() * 1000)) * self.thresholds[3],
+        )
         profile = self._profile.getProfile()
         bids = []
         for bid in self._bid_list:
@@ -239,7 +303,15 @@ class Agent18(DefaultParty):
         if len(bids) == 0:
             return self._bid_list[0]
         weights = np.array(
-            [float(profile.getUtility(bid)) + float(self._opponent_model.getUtility(bid)) for bid in bids])
+            [
+                float(profile.getUtility(bid))
+                + float(self._opponent_model.getUtility(bid))
+                for bid in bids
+            ]
+        )
+        # Fallback if weights sum to zero
+        if np.sum(weights) == 0:
+            return bids[0]
         return choices(bids, weights=weights / np.sum(weights))[0]
 
     # Picks one bid from the bid list that maximizes a specific metric
@@ -255,6 +327,13 @@ class Agent18(DefaultParty):
     def _sendReceived(self):
         # Get top 20 received bids and select randomly based on our utility
         profile = self._profile.getProfile()
+        # Fallback to best bid if no received bids
+        if not self._received_bids:
+            return self._get_fallback_bid()
         top_20 = sorted(self._received_bids, key=profile.getUtility, reverse=True)[:20]
+        if not top_20:
+            return self._get_fallback_bid()
         weights = np.array([float(profile.getUtility(bid)) for bid in top_20])
+        if np.sum(weights) == 0:
+            return top_20[0]
         return random.choices(top_20, k=1, weights=weights / np.sum(weights))[0]

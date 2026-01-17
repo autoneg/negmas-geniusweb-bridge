@@ -34,6 +34,12 @@ from tudelft_utilities_logging.Reporter import Reporter
 
 
 class Agent22(DefaultParty):
+    """CSE3210 negotiation agent using chi-squared frequency analysis.
+
+    Note:
+        Modified for negmas-geniusweb-bridge: Added guard against divide by zero
+        in oppWeights() when chi-square test receives empty or all-zero frequencies.
+    """
 
     def __init__(self, reporter: Reporter = None):
         super().__init__(reporter)
@@ -76,7 +82,9 @@ class Agent22(DefaultParty):
             self.weightList = profile.getWeights()
             self.issue_names = list(self.weightList.keys())
             n = len(self.issue_names)
-            self.weightListOpp = dict(zip(self.issue_names, np.full(n, Decimal(round(1 / n, 6)))))
+            self.weightListOpp = dict(
+                zip(self.issue_names, np.full(n, Decimal(round(1 / n, 6))))
+            )
             self.issue_value_frequencies = dict(zip(self.issue_names, {}))
         # ActionDone is an action send by an opponent (an offer or an accept)
         elif isinstance(info, ActionDone):
@@ -87,8 +95,6 @@ class Agent22(DefaultParty):
                 self.bidListOpp.append(self._last_received_bid)
                 self._updateFrequencies(self._last_received_bid)
                 self.update_weight_every_window()
-
-
 
         # YourTurn notifies you that it is your turn to act
         elif isinstance(info, YourTurn):
@@ -125,8 +131,6 @@ class Agent22(DefaultParty):
         if self._profile is not None:
             self._profile.close()
             self._profile = None
-
-    
 
     # give a description of your agent
     # Overrride
@@ -165,7 +169,9 @@ class Agent22(DefaultParty):
         for issue in bid.getIssues():
             value = bid.getValue(issue)
             if issue in value_estimation and value in value_estimation[issue]:
-                utility += float(self.weightListOpp[issue]) * value_estimation[issue][value]
+                utility += (
+                    float(self.weightListOpp[issue]) * value_estimation[issue][value]
+                )
 
         return Decimal(utility)
 
@@ -188,9 +194,10 @@ class Agent22(DefaultParty):
         U_theirs = self._getTheirUtility(bid)
         a = Decimal(1 - progress)
 
-        if a < 1.0 / 2: return U_mine
-        if a >= 1.0 / 2: return (a * U_mine + (1 - a) * U_theirs) / 2
-
+        if a < 1.0 / 2:
+            return U_mine
+        if a >= 1.0 / 2:
+            return (a * U_mine + (1 - a) * U_theirs) / 2
 
     def _checkStrategyOpp(self) -> float:
         opp_bids_length = len(self.bidListOpp)
@@ -230,19 +237,23 @@ class Agent22(DefaultParty):
 
             receivedBid = self._evaluate_bid(bid)
             # If the opponent's bid is better than our next planned bid, accept
-            if (receivedBid > self._evaluate_bid(plannedBid)):
+            if receivedBid > self._evaluate_bid(plannedBid):
                 return True
 
             # Save bids from window W and save the best one
-            if (progress >= T - W and progress < T):
+            if progress >= T - W and progress < T:
                 bidsFromW.append(receivedBid)
-                if (receivedBid > maxBidFromW):
+                if receivedBid > maxBidFromW:
                     maxBidFromW = receivedBid
 
             utility_target = reservation_value * 3 / 2
             # After time T, accept the bid if it is better from the best bid recieved
             # in the previous time window W
-            if (progress >= T and receivedBid < utility_target and receivedBid >= maxBidFromW):
+            if (
+                progress >= T
+                and receivedBid < utility_target
+                and receivedBid >= maxBidFromW
+            ):
                 return True
 
             return receivedBid >= utility_target
@@ -260,7 +271,9 @@ class Agent22(DefaultParty):
 
         ft1 = Decimal(1)
         if beta != 0:
-            ft1 = round(Decimal(1 - pow(progress, 1 / beta)), 6)  # defaults ROUND_HALF_UP
+            ft1 = round(
+                Decimal(1 - pow(progress, 1 / beta)), 6
+            )  # defaults ROUND_HALF_UP
         utilityGoal: Decimal = min_util + (max_util - min_util) * ft1
 
         options: ImmutableList[Bid] = self._extendedspace.getBids(utilityGoal)
@@ -279,7 +292,9 @@ class Agent22(DefaultParty):
         k = 10
         if len(self.bidListOpp) % k == 0:
             self.weightListOpp = self.oppWeights()
-            self.prev_issue_value_frequencies = copy.deepcopy(self.issue_value_frequencies)
+            self.prev_issue_value_frequencies = copy.deepcopy(
+                self.issue_value_frequencies
+            )
 
     def val_estimation(self) -> dict[str, dict[Value, float]]:
         gamma = 0.5
@@ -289,7 +304,8 @@ class Agent22(DefaultParty):
             max_value = max(freqs[issue], key=freqs[issue].get)
             for value in freqs[issue].keys():
                 value_func[issue][value] = ((1 + freqs[issue][value]) ** gamma) / (
-                            (1 + freqs[issue][max_value]) ** gamma)
+                    (1 + freqs[issue][max_value]) ** gamma
+                )
 
         return value_func
 
@@ -323,20 +339,30 @@ class Agent22(DefaultParty):
             # Do a chi squared distribution test on the frequencies to check if they have changed significantly
             obs = list(frequencies.values())
             exp = list(prev_frequencies.values())
+            # Guard against empty or all-zero frequencies which cause divide by zero in chisquare
+            if not obs or not exp or sum(exp) == 0 or all(v == 0 for v in exp):
+                # Skip this issue if chi-square test cannot be performed
+                e.append(issue)
+                continue
             _, p_val = chisquare(f_obs=obs, f_exp=exp)
             # If our frequencies did not change significantely add this issue to e
             if p_val > 0.05:
                 e.append(issue)
             else:
                 # Calculate the expected value for the utility for each issue value and compare with the previous found one
-                prev_expected = {k: prev_frequencies[k] * value_func[issue][k] for k in prev_frequencies}
-                expected = {k: frequencies[k] * value_func[issue][k] for k in frequencies}
+                prev_expected = {
+                    k: prev_frequencies[k] * value_func[issue][k]
+                    for k in prev_frequencies
+                }
+                expected = {
+                    k: frequencies[k] * value_func[issue][k] for k in frequencies
+                }
                 if sum(expected.values()) < sum(prev_expected.values()):
                     concession = True
 
         if len(e) != len(issue_list) and concession:
             for issue in e:
-                delta_t = Decimal(alpha * (1 - progress ** beta))
+                delta_t = Decimal(alpha * (1 - progress**beta))
                 new_weights[issue] += delta_t
 
         # Normalize weights

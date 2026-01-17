@@ -10,7 +10,6 @@ from .utility import AgentUtility
 
 
 class AbstractBiddingStrategy:
-
     def __init__(self, profile: ProfileInterface = None, utility: AgentUtility = None):
         self._profile: ProfileInterface = profile
         self._utility: AgentUtility = utility
@@ -23,7 +22,6 @@ class AbstractBiddingStrategy:
         """Setter for utility interface"""
         self._utility: AgentUtility = utility
 
-
     @abstractmethod
     def get_bid(self) -> Bid:
         """Method for getting the next bid to make"""
@@ -31,7 +29,6 @@ class AbstractBiddingStrategy:
 
 
 class BiddingStrategyDeterministic(AbstractBiddingStrategy):
-
     def __init__(self, profile=None, utility=None):
         super().__init__(profile, utility)
         self._last_made_bid_utility = None
@@ -47,34 +44,54 @@ class BiddingStrategyDeterministic(AbstractBiddingStrategy):
 
     def get_bid(self):
         """This strategy determines the rating for a set of bids and returns the bid with the highest expected opponent utility"""
+        # Fallback if bids list is empty
+        if not self.bids:
+            # Regenerate bids if possible
+            if self._profile is not None:
+                self.bids = self.most_to_least_likely()
+            if not self.bids:
+                return None
+
         possible_bids = []
         for i in range(self._utility.speed_factor()):
+            if self.bids:
+                possible_bids.append(self.bids.pop())
+        if self.bids:
             possible_bids.append(self.bids.pop())
-        else:
-            possible_bids.append(self.bids.pop())
+
+        # Fallback if we couldn't get any bids
+        if not possible_bids:
+            return None
 
         distribution = self.get_bid_distribution(possible_bids)
         bid = possible_bids[distribution.index(max(distribution))]
         self._last_made_bid_utility = bid[1]
         return bid[0]
 
-
     def get_bid_distribution(self, bids):
-        """Method """
+        """Method"""
         opponent_issue_percentage = self._utility.get_opponent_issue_count()
         opponent_issue_weights = self._utility.get_weight_heuristic()
 
         distribution: List[float] = []
         for bid in bids:
-            distribution.append(self._utility.rate_bid(bid[0], opponent_issue_percentage, opponent_issue_weights))
+            distribution.append(
+                self._utility.rate_bid(
+                    bid[0], opponent_issue_percentage, opponent_issue_weights
+                )
+            )
 
         total_rating: float = sum(distribution)
         total_rating: Union[float, int] = total_rating if total_rating != 0 else 1
-        normalized_distribution: List[float] = list(map(lambda x: x / total_rating, distribution))
+        normalized_distribution: List[float] = list(
+            map(lambda x: x / total_rating, distribution)
+        )
 
         # if normalized distribution is 0 for all entries, return a uniform distribution instead
         if sum(normalized_distribution) == 0:
-            normalized_distribution = list(map(lambda x: 1 / len(normalized_distribution), normalized_distribution))
+            normalized_distribution = list(
+                map(lambda x: 1 / len(normalized_distribution), normalized_distribution)
+            )
 
         return normalized_distribution
 
@@ -99,17 +116,28 @@ class BiddingStrategyDeterministic(AbstractBiddingStrategy):
 
 
 class BiddingStrategyProbalistic(BiddingStrategyDeterministic):
-
     def __init__(self, profile=None, utility=None):
         super().__init__(profile, utility)
 
-
     def get_bid(self):
+        # Fallback if bids list is empty
+        if not self.bids:
+            # Regenerate bids if possible
+            if self._profile is not None:
+                self.bids = self.most_to_least_likely()
+            if not self.bids:
+                return None
+
         possible_bids = []
         for i in range(self._utility.speed_factor()):
+            if self.bids:
+                possible_bids.append(self.bids.pop())
+        if self.bids:
             possible_bids.append(self.bids.pop())
-        else:
-            possible_bids.append(self.bids.pop())
+
+        # Fallback if we couldn't get any bids
+        if not possible_bids:
+            return None
 
         distribution = self.get_bid_distribution(possible_bids)
         bid = possible_bids[np.random.choice(len(possible_bids), p=distribution)]
@@ -118,6 +146,13 @@ class BiddingStrategyProbalistic(BiddingStrategyDeterministic):
 
 
 class AgressiveBiddingStrategy(AbstractBiddingStrategy):
+    """Aggressive bidding strategy.
+
+    Note:
+        Minor modification from original: Added fallback to best bid when no
+        high-utility bids are available on small domains.
+    """
+
     def __init__(self, profile=None, utility=None):
         super().__init__(profile, utility)
         self.bids = []
@@ -125,6 +160,16 @@ class AgressiveBiddingStrategy(AbstractBiddingStrategy):
     def get_bid(self) -> Bid:
         if len(self.bids) == 0:
             self.bids = self.get_all_bids_higher_than(0.8)
+            # Fallback: if no bids above 0.8, try lower thresholds
+            if len(self.bids) == 0:
+                self.bids = self.get_all_bids_higher_than(0.5)
+            # Final fallback: get all bids
+            if len(self.bids) == 0:
+                self.bids = self.get_all_bids_higher_than(0.0)
+
+        if len(self.bids) == 0:
+            # Return None if truly no bids exist
+            return None
 
         bid = self.bids[np.random.choice(len(self.bids))]
         self.bids.remove(bid)

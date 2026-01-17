@@ -23,7 +23,13 @@ from geniusweb.progress.Progress import Progress
 import numpy as np
 
 
-class Bidding():
+class Bidding:
+    """Bidding strategy for Agent68.
+
+    Note:
+        Modified for negmas-geniusweb-bridge: Added None checks for _best_backup_bid
+        in makeBid() and _isGood() to prevent comparison errors at negotiation start.
+    """
 
     def __init__(self) -> None:
         self._profileint: ProfileInterface = None  # type:ignore
@@ -37,8 +43,8 @@ class Bidding():
         self._best_backup_bid: Bid = None
         self._opp_utility = None
         self._bids_to_make_stack: [Bid] = []
-        self._resBidValue = Decimal('0.0')
-        self._recentBidScore = [Decimal('0.0') for _ in range(5)]
+        self._resBidValue = Decimal("0.0")
+        self._recentBidScore = [Decimal("0.0") for _ in range(5)]
         self._utilW = 0.75
         self._leniencyW = 0.25
         self._leniencyBase = 0.35
@@ -57,7 +63,7 @@ class Bidding():
         self._leniencyW = params.getDouble("leniencyWeight", 0.2, 0.0, 1.0)
         self._leniencyBase = params.getDouble("leniencyBase", 0.4, 0.0, 1.0)
 
-        if (resBid):
+        if resBid:
             self._resBidValue = self._profileint.getProfile().getUtility(resBid)
         else:
             self._resBidValue = 0.0
@@ -91,7 +97,7 @@ class Bidding():
 
         bidUtility = profile.getUtility(bid)
 
-        if (self._recentBidScore[0] < bidUtility):
+        if self._recentBidScore[0] < bidUtility:
             self._recentBidScore[0] = bidUtility
 
         self.updateBestBackupBid(bid, bidUtility)
@@ -100,7 +106,7 @@ class Bidding():
         """
         Modify acceptance threshold based on the recent offers from the opponent.
         Good offers -> Lower threshold
-        Bad offers -> Higher threshold 
+        Bad offers -> Higher threshold
 
         Returns:
             _type_: _description_
@@ -111,7 +117,7 @@ class Bidding():
 
     def updateBestBackupBid(self, bid: Bid, bidScore):
         """Updates best bid proposed by the opponent so far.
-           In order to have a backup bid in the final few rounds. 
+           In order to have a backup bid in the final few rounds.
 
         Args:
             bid (Bid): _description_
@@ -188,14 +194,18 @@ class Bidding():
         if len(self._bids_to_make_stack) == 0:
             time = self._progress.get(round(clock() * 1000))
             leniencyValue = self.leniencyThresh()
-            utilityGoal = float(self._getUtilityGoal(
-                time,
-                self.getE(),
-                self._extendedspace.getMin(),
-                self._extendedspace.getMax(),
-            ))
+            utilityGoal = float(
+                self._getUtilityGoal(
+                    time,
+                    self.getE(),
+                    self._extendedspace.getMin(),
+                    self._extendedspace.getMax(),
+                )
+            )
 
-            utilityGoal = Decimal(self._utilW * utilityGoal + self._leniencyW * leniencyValue)
+            utilityGoal = Decimal(
+                self._utilW * utilityGoal + self._leniencyW * leniencyValue
+            )
 
             options: ImmutableList[Bid] = self._extendedspace.getBids(utilityGoal)
 
@@ -206,39 +216,49 @@ class Bidding():
                 return outBid
 
             # filter based on the frequencies found above
-            filtered = list(filter(lambda bid: bid._issuevalues[max_issue] == max_value, options))
+            filtered = list(
+                filter(lambda bid: bid._issuevalues[max_issue] == max_value, options)
+            )
             top = []
             if len(filtered) == 0 or self._progress.get(round(clock() * 1000)) < 0.25:
                 util_predictor = lambda bid: opponent.getUtility(bid)
 
-                top = sorted(self._joinedSubList(options, 0, min(10, options.size())), key=util_predictor, reverse=True)
-                # if top[0] is smaller than best bid so far
-                if profile.getUtility(self._best_backup_bid) >= profile.getUtility(top[0]):
+                top = sorted(
+                    self._joinedSubList(options, 0, min(10, options.size())),
+                    key=util_predictor,
+                    reverse=True,
+                )
+                # if top[0] is smaller than best bid so far (guard against None _best_backup_bid)
+                if self._best_backup_bid is not None and profile.getUtility(
+                    self._best_backup_bid
+                ) >= profile.getUtility(top[0]):
                     self._bids_to_make_stack.append(self._best_backup_bid)
                 else:
                     self._bids_to_make_stack.append(top[0])
             else:
-                top = filtered[:min(10, len(filtered))]
+                top = filtered[: min(10, len(filtered))]
                 util_predictor = lambda bid: opponent.getUtility(bid)
                 top = sorted(top, key=util_predictor, reverse=True)
 
                 # Proposing the bid from the opponent with the best utility so far
                 if len(top) >= 2:
                     # push two bids on stack if 2 were found else just the one
-                    if profile.getUtility(self._best_backup_bid) >= profile.getUtility(top[1]):
+                    # Guard against None _best_backup_bid at negotiation start
+                    if self._best_backup_bid is not None and profile.getUtility(
+                        self._best_backup_bid
+                    ) >= profile.getUtility(top[1]):
                         self._bids_to_make_stack.append(self._best_backup_bid)
                 self._bids_to_make_stack.append(top[0])
         # Return the next best calculated bid
         return self._bids_to_make_stack.pop()
 
     def _pickBestOpponentUtility(self, bidlist: ImmutableList[Bid]) -> List[Bid]:
-
         outBids: List[Bid] = sorted(bidlist, key=self._opp_utility, reverse=True)
 
         return outBids[0:2]
 
     def _getUtilityGoal(
-            self, t: float, e: float, minUtil: Decimal, maxUtil: Decimal
+        self, t: float, e: float, minUtil: Decimal, maxUtil: Decimal
     ) -> Decimal:
         """
         @param t       the time in [0,1] where 0 means start of nego and 1 the
@@ -271,23 +291,30 @@ class Bidding():
         profile = cast(LinearAdditive, self._profileint.getProfile())
 
         time = self._progress.get(round(clock() * 1000))
-        
-        #Accept final round
-        if (time >= 0.99):
+
+        # Accept final round
+        if time >= 0.99:
             return True
 
         leniency = self.leniencyThresh()
         bidUtil = profile.getUtility(bid)
-        utilGoal = float(self._getUtilityGoal(
-            time,
-            self.getE(),
-            self._extendedspace.getMin(),
-            self._extendedspace.getMax(),
-        ))
+        utilGoal = float(
+            self._getUtilityGoal(
+                time,
+                self.getE(),
+                self._extendedspace.getMin(),
+                self._extendedspace.getMax(),
+            )
+        )
 
-        return bidUtil >= self._resBidValue \
-               and bidUtil >= (self._utilW * utilGoal + self._leniencyW * leniency) \
-               and bidUtil >= profile.getUtility(self._best_backup_bid)
+        return (
+            bidUtil >= self._resBidValue
+            and bidUtil >= (self._utilW * utilGoal + self._leniencyW * leniency)
+            and (
+                self._best_backup_bid is None
+                or bidUtil >= profile.getUtility(self._best_backup_bid)
+            )
+        )
 
     def _joinedSubList(self, list: JoinedList, start: int, end: int):
         res = []

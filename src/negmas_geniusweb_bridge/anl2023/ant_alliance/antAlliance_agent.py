@@ -189,7 +189,9 @@ class AntAllianceAgent(DefaultParty):
 
             if self.opponent_best_bid is None:
                 self.opponent_best_bid = bid
-            elif self.profile.getUtility(bid) > self.profile.getUtility(self.opponent_best_bid):
+            elif self.profile.getUtility(bid) > self.profile.getUtility(
+                self.opponent_best_bid
+            ):
                 self.opponent_best_bid = bid
 
     def my_turn(self):
@@ -232,7 +234,10 @@ class AntAllianceAgent(DefaultParty):
         self.bid_matrix = np.zeros((self.numberOfIssues, maxNumberOfValues), dtype=int)
 
     def analysis_opponent_bids(self):
-        for issue_id, issue_estimator in self.last_received_bid.getIssueValues().items():
+        for (
+            issue_id,
+            issue_estimator,
+        ) in self.last_received_bid.getIssueValues().items():
             row = self.issues_id_list.index(issue_id)
             column = self.issues_value_list[row].index(issue_estimator)
             self.bid_matrix[row][column] += 1
@@ -272,6 +277,9 @@ class AntAllianceAgent(DefaultParty):
             utility = self.profile.getUtility(bid)
             if utility > 0.75:
                 bid_list.append(bid)
+        # Fallback: if no bids above threshold, use all sorted bids
+        if not bid_list and self.allMyBidsSorted:
+            bid_list = list(self.allMyBidsSorted)
         self.useBidList = bid_list
 
     def get_social_bid(self):
@@ -281,8 +289,16 @@ class AntAllianceAgent(DefaultParty):
             self.opponent_model = OpponentModel(self.domain)
 
         if progress < 0.5:
-            index = randint(0, len(self.useBidList) - 1)
-            bid = self.useBidList[index]
+            # Fallback to best bid if useBidList is empty
+            if not self.useBidList:
+                bid = (
+                    self.allMyBidsSorted[0]
+                    if self.allMyBidsSorted
+                    else self.lastOfferBid
+                )
+            else:
+                index = randint(0, len(self.useBidList) - 1)
+                bid = self.useBidList[index]
             self.next_bid = bid
         elif progress > 0.95:
             bid = self.opponent_best_bid

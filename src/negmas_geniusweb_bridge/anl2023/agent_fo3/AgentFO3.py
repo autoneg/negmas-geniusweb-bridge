@@ -4,7 +4,7 @@ import json
 import os
 from random import randint
 from time import time
-from typing import cast,TypedDict
+from typing import cast, TypedDict
 
 from geniusweb.actions.Accept import Accept
 from geniusweb.actions.Action import Action
@@ -36,17 +36,24 @@ from tudelft.utilities.immutablelist.ImmutableList import ImmutableList
 
 from .utils.opponent_model import OpponentModel
 
+
 class SessionData(TypedDict):
     paretoCenter: float
     acceptUtility: float
     finishTime: float
 
+
 class DataList(TypedDict):
     sessions: list[SessionData]
+
 
 class AgentFO3(DefaultParty):
     """
     Template of a Python geniusweb agent.
+
+    Note:
+        Minor modification from original: Added fallback to best bid when no bids
+        are found in the target utility range on small domains.
     """
 
     def __init__(self):
@@ -75,7 +82,7 @@ class AgentFO3(DefaultParty):
         self.topbid_percentage: float = 0.01
 
         self.allbid: AllBidsList = None
-        self.bid_with_utility: list[tuple[Bid,float]] = None
+        self.bid_with_utility: list[tuple[Bid, float]] = None
         self.topbid_num: int = None
         self.min_util: float = 0.95
         self.weak_accept_flag: bool = False
@@ -97,7 +104,7 @@ class AgentFO3(DefaultParty):
         # a Settings message is the first message that will be send to your
         # agent containing all the information about the negotiation session.
         if isinstance(data, Settings):
-            self.op_utility_log=[]
+            self.op_utility_log = []
             self.settings = cast(Settings, data)
             self.me = self.settings.getID()
 
@@ -114,7 +121,7 @@ class AgentFO3(DefaultParty):
             self.profile = profile_connection.getProfile()
             self.domain = self.profile.getDomain()
             self.allbid = AllBidsList(self.domain)
-            self.bids_all = BidsWithUtility.create(cast(LinearAdditive,self.profile))
+            self.bids_all = BidsWithUtility.create(cast(LinearAdditive, self.profile))
             profile_connection.close()
 
         # ActionDone informs you of an action (an offer or an accept)
@@ -127,24 +134,29 @@ class AgentFO3(DefaultParty):
             if actor != self.me:
                 # obtain the name of the opponent, cutting of the position ID.
                 if self.other is None:
-                    self.other = str(actor).split("_")[-2]
+                    # Use rsplit to safely handle names without underscores
+                    actor_str = str(actor)
+                    parts = actor_str.rsplit("_", 1)
+                    self.other = parts[0] if len(parts) >= 1 else actor_str
                     self.load_data()
 
                 # process action done by opponent
                 self.opponent_action(action)
         # YourTurn notifies you that it is your turn to act
         elif isinstance(data, YourTurn):
-            if self.progress.get(time()*1000) >=0.1 and self.time_flag:
-                self.time_flag=False
+            if self.progress.get(time() * 1000) >= 0.1 and self.time_flag:
+                self.time_flag = False
                 self.calc_data()
             # execute a turn
             self.my_turn()
 
         # Finished will be send if the negotiation has ended (through agreement or deadline)
         elif isinstance(data, Finished):
-            accept=cast(Finished,data).getAgreements()
-            if len(accept.getMap())>0:
-                self.accept_utility=float(self.profile.getUtility(accept.getMap()[self.me]))
+            accept = cast(Finished, data).getAgreements()
+            if len(accept.getMap()) > 0:
+                self.accept_utility = float(
+                    self.profile.getUtility(accept.getMap()[self.me])
+                )
             self.update_data()
             self.save_data()
             # terminate the agent MUST BE CALLED
@@ -156,34 +168,42 @@ class AgentFO3(DefaultParty):
     def load_data(self):
         if os.path.exists(f"{self.storage_dir}/{self.other}.json"):
             with open(f"{self.storage_dir}/{self.other}.json") as f:
-                self.data_list=json.load(f)
-            self.accept_utility_history=[]
-            self.pareto_center_history=[]
-            self.finish_time_hisotry=[]
+                self.data_list = json.load(f)
+            self.accept_utility_history = []
+            self.pareto_center_history = []
+            self.finish_time_hisotry = []
             for session in self.data_list["sessions"]:
                 self.accept_utility_history.append(session["acceptUtility"])
                 self.pareto_center_history.append(session["paretoCenter"])
                 self.finish_time_hisotry.append(session["finishTime"])
         else:
-            self.data_list={"sessions":[]}
+            self.data_list = {"sessions": []}
 
     def calc_data(self):
         if self.accept_utility_history is None:
             return
-        self.calc_utility=[]
+        self.calc_utility = []
         for i in range(len(self.accept_utility_history)):
-            x=self.pareto_center/self.pareto_center_history[i]
-            self.calc_utility.append(self.accept_utility_history[i]*x)
-        self.utility_average=sum(self.calc_utility)/len(self.calc_utility)
-        self.finish_time_average=sum(self.finish_time_hisotry)/len(self.finish_time_hisotry)
-        bad_util_num=sum([i<0.5 for i in self.accept_utility_history])
-        if bad_util_num>=len(self.accept_utility_history)/4 and len(self.accept_utility_history)>3:
-            self.weak_accept_flag=True
-        if bad_util_num>len(self.accept_utility_history)*0.6 and len(self.accept_utility_history)>3:
-            self.topbid_percentage=0.05
-        elif bad_util_num>len(self.accept_utility_history)*0.3:
-            self.topbid_percentage=0.025
-        self.topbid_num=int(self.allbid.size()*self.topbid_percentage)
+            x = self.pareto_center / self.pareto_center_history[i]
+            self.calc_utility.append(self.accept_utility_history[i] * x)
+        self.utility_average = sum(self.calc_utility) / len(self.calc_utility)
+        self.finish_time_average = sum(self.finish_time_hisotry) / len(
+            self.finish_time_hisotry
+        )
+        bad_util_num = sum([i < 0.5 for i in self.accept_utility_history])
+        if (
+            bad_util_num >= len(self.accept_utility_history) / 4
+            and len(self.accept_utility_history) > 3
+        ):
+            self.weak_accept_flag = True
+        if (
+            bad_util_num > len(self.accept_utility_history) * 0.6
+            and len(self.accept_utility_history) > 3
+        ):
+            self.topbid_percentage = 0.05
+        elif bad_util_num > len(self.accept_utility_history) * 0.3:
+            self.topbid_percentage = 0.025
+        self.topbid_num = int(self.allbid.size() * self.topbid_percentage)
 
     def getCapabilities(self) -> Capabilities:
         """MUST BE IMPLEMENTED
@@ -236,14 +256,16 @@ class AgentFO3(DefaultParty):
             self.last_received_bid = bid
 
             if self.op_best_bid is None:
-                self.op_best_bid=bid
-            elif self.profile.getUtility(self.op_best_bid)<self.profile.getUtility(bid):
-                self.op_best_bid=bid
+                self.op_best_bid = bid
+            elif self.profile.getUtility(self.op_best_bid) < self.profile.getUtility(
+                bid
+            ):
+                self.op_best_bid = bid
 
-            if self.progress.get(time()*1000)<=0.1:
+            if self.progress.get(time() * 1000) <= 0.1:
                 self.op_utility_log.append(self.profile.getUtility(bid))
-                op_util_ave=sum(self.op_utility_log)/len(self.op_utility_log)
-                self.pareto_center=float((3+op_util_ave)/4)
+                op_util_ave = sum(self.op_utility_log) / len(self.op_utility_log)
+                self.pareto_center = float((3 + op_util_ave) / 4)
 
     def my_turn(self):
         """This method is called when it is our turn. It should decide upon an action
@@ -262,9 +284,9 @@ class AgentFO3(DefaultParty):
         self.send_action(action)
 
     def update_data(self):
-        finish_time=self.progress.get(time()*1000)
+        finish_time = self.progress.get(time() * 1000)
 
-        session_data: SessionData={
+        session_data: SessionData = {
             "paretoCenter": self.pareto_center,
             "acceptUtility": self.accept_utility,
             "finishTime": finish_time,
@@ -278,7 +300,7 @@ class AgentFO3(DefaultParty):
         Taking too much time might result in your agent being killed, so use it for storage only.
         """
         with open(f"{self.storage_dir}/{self.other}.json", "w") as f:
-            json.dump(self.data_list,f,indent=4)
+            json.dump(self.data_list, f, indent=4)
 
     ###########################################################################################
     ################################## Example methods below ##################################
@@ -290,41 +312,58 @@ class AgentFO3(DefaultParty):
 
         # progress of the negotiation session between 0 and 1 (1 is deadline)
         progress = self.progress.get(time() * 1000)
-        utility=float(self.profile.getUtility(bid))
+        utility = float(self.profile.getUtility(bid))
 
         conditions = [
             not self.time_flag and utility > self.pareto_center,
             utility >= self.min_util,
-            min(0.8,self.finish_time_average) <= progress and utility > max(0.45,self.utility_average),
-            progress >= min(0.9,self.finish_time_average) and self.weak_accept_flag and utility >= float(self.profile.getUtility(self.op_best_bid)),
+            min(0.8, self.finish_time_average) <= progress
+            and utility > max(0.45, self.utility_average),
+            progress >= min(0.9, self.finish_time_average)
+            and self.weak_accept_flag
+            and utility >= float(self.profile.getUtility(self.op_best_bid)),
             progress >= 0.98,
         ]
         return all(conditions)
 
     def find_bid(self) -> Bid:
         if self.bid_with_utility is None:
-            self.bid_with_utility=[]
+            self.bid_with_utility = []
             for i in range(self.allbid.size()):
                 bid = self.allbid.get(i)
-                util=self.profile.getUtility(bid)
-                self.bid_with_utility.append((bid,util))
+                util = self.profile.getUtility(bid)
+                self.bid_with_utility.append((bid, util))
             self.bid_with_utility.sort(key=lambda tup: tup[1], reverse=True)
-            self.topbid_num=int(self.allbid.size()*self.topbid_percentage)
-            self.min_util=self.bid_with_utility[self.topbid_num-1][1]
+            self.topbid_num = max(1, int(self.allbid.size() * self.topbid_percentage))
+            if self.topbid_num > 0 and len(self.bid_with_utility) >= self.topbid_num:
+                self.min_util = self.bid_with_utility[self.topbid_num - 1][1]
 
-        if self.progress.get(time()*1000) >= 0.98 and self.weak_accept_flag:
+        # Fallback to best bid if no bids available
+        if not self.bid_with_utility:
             return self.op_best_bid
-        elif min(0.85,self.finish_time_average) < self.progress.get(time()*1000) and not self.topbid_percentage==0.01:
-            op_max_util=self.profile.getUtility(self.op_best_bid)
-            options: ImmutableList[Bid] = self.bids_all.getBids(Interval(op_max_util,self.min_util))
+
+        if self.progress.get(time() * 1000) >= 0.98 and self.weak_accept_flag:
+            return self.op_best_bid
+        elif (
+            min(0.85, self.finish_time_average) < self.progress.get(time() * 1000)
+            and not self.topbid_percentage == 0.01
+        ):
+            op_max_util = self.profile.getUtility(self.op_best_bid)
+            options: ImmutableList[Bid] = self.bids_all.getBids(
+                Interval(op_max_util, self.min_util)
+            )
             if options.size() == 0:
                 # if we can't find good bid
-                options = self.bids_all.getBids(Interval(self.min_util,1))
-            # pick a random one.
+                options = self.bids_all.getBids(Interval(self.min_util, 1))
+            # pick a random one, fallback to best bid if empty
+            if options.size() == 0:
+                return self.bid_with_utility[0][0]
             return options.get(randint(0, options.size() - 1))
 
-        return self.bid_with_utility[randint(0,self.topbid_num-1)][0]
-
+        # Ensure topbid_num is valid
+        if self.topbid_num <= 0:
+            return self.bid_with_utility[0][0]
+        return self.bid_with_utility[randint(0, self.topbid_num - 1)][0]
 
     def score_bid(self, bid: Bid, alpha: float = 0.95, eps: float = 0.1) -> float:
         """Calculate heuristic score for a bid

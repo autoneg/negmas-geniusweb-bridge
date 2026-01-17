@@ -72,6 +72,61 @@ ALL_AGENTS.update(ANAC2021_WRAPPED)
 TRAINING_AGENTS = ALL_AGENTS.copy()
 TESTING_AGENTS = ALL_AGENTS.copy()
 
+# Agents with known issues that fail tests on some domains
+# These get "disabled" and "broken" tags during registration
+BROKEN_AGENTS: set[str] = {
+    # ANL 2022 agents
+    "BIUAgent",  # May timeout >60 secs on some domains
+    "CompromisingAgent",  # May cause 'Action cannot be None' errors
+    "LearningAgent",  # May cause 'Action cannot be None' errors
+    "ProcrastinAgent",  # May have issues with first offer accepted
+    # ANL 2023 agents
+    "AmbitiousAgent",  # ProgressRounds missing getStart method
+    # CSE3210 agents
+    "Agent22",  # May throw scipy divide by zero errors
+    "Agent67",  # Edge case issues on small domains
+    "Agent68",  # May have issues handling opening bid
+}
+
+
+def _register_agent(
+    agent_cls: type, short_name: str, tags: set[str], **kwargs: Any
+) -> None:
+    """Register a negotiator with backward compatibility for older negmas versions.
+
+    Attempts to register with `source` parameter first (new API), and falls back
+    to registration without `source` if that parameter is not supported.
+
+    Args:
+        agent_cls: The negotiator class to register.
+        short_name: Short name for the negotiator.
+        tags: Set of tags for the negotiator.
+        **kwargs: Additional keyword arguments passed to register_negotiator.
+    """
+    try:
+        register_negotiator(
+            agent_cls,
+            short_name=short_name,
+            source="geniusweb-bridge",
+            tags=tags,
+            **kwargs,
+        )
+    except TypeError:
+        # Fallback for older negmas versions without source parameter
+        register_negotiator(
+            agent_cls,
+            short_name=short_name,
+            tags=tags,
+            **kwargs,
+        )
+
+
+def _add_broken_tags(name: str, tags: set[str]) -> set[str]:
+    """Add 'disabled' and 'broken' tags if the agent is known to have issues."""
+    if name in BROKEN_AGENTS:
+        return tags | {"disabled", "broken"}
+    return tags
+
 
 # Register all wrapped agents with negmas.registry if available
 def _register_agents() -> None:
@@ -81,60 +136,66 @@ def _register_agents() -> None:
 
     # Basic agents - reference implementations
     for name, agent_cls in BASIC_WRAPPED.items():
-        register_negotiator(
+        tags = {"geniusweb", "basic", "reference", "bilateral_only"}
+        _register_agent(
             agent_cls,
             short_name=name,
-            bilateral_only=True,
-            tags={"geniusweb", "basic", "reference"},
+            tags=_add_broken_tags(name, tags),
         )
 
     # ANAC 2020 agents - AI-translated from Java
     for name, agent_cls in ANAC2020_WRAPPED.items():
-        register_negotiator(
+        tags = {"geniusweb", "anac2020", "ai-translated", "bilateral_only"}
+        _register_agent(
             agent_cls,
             short_name=name,
-            bilateral_only=True,
             anac_year=2020,
-            tags={"geniusweb", "anac2020", "ai-translated"},
+            tags=_add_broken_tags(name, tags),
         )
 
     # ANAC 2021 agents - AI-translated from Java
     for name, agent_cls in ANAC2021_WRAPPED.items():
-        register_negotiator(
+        tags = {"geniusweb", "anac2021", "ai-translated", "bilateral_only"}
+        _register_agent(
             agent_cls,
             short_name=name,
-            bilateral_only=True,
             anac_year=2021,
-            tags={"geniusweb", "anac2021", "ai-translated"},
+            tags=_add_broken_tags(name, tags),
         )
 
     # ANL 2022 agents - Python native
     for name, agent_cls in ANL2022_WRAPPED.items():
-        register_negotiator(
+        tags = {"geniusweb", "anl2022", "python-native", "bilateral_only"}
+        _register_agent(
             agent_cls,
             short_name=name,
-            bilateral_only=True,
             anac_year=2022,
-            tags={"geniusweb", "anl2022", "python-native"},
+            tags=_add_broken_tags(name, tags),
         )
 
     # ANL 2023 agents - Python native
     for name, agent_cls in ANL2023_WRAPPED.items():
-        register_negotiator(
+        tags = {"geniusweb", "anl2023", "python-native", "bilateral_only"}
+        _register_agent(
             agent_cls,
             short_name=name,
-            bilateral_only=True,
             anac_year=2023,
-            tags={"geniusweb", "anl2023", "python-native"},
+            tags=_add_broken_tags(name, tags),
         )
 
     # CSE3210 agents - Python native (TU Delft course)
     for name, agent_cls in CSE3210_WRAPPED.items():
-        register_negotiator(
+        tags = {
+            "geniusweb",
+            "cse3210",
+            "python-native",
+            "educational",
+            "bilateral_only",
+        }
+        _register_agent(
             agent_cls,
             short_name=name,
-            bilateral_only=True,
-            tags={"geniusweb", "cse3210", "python-native", "educational"},
+            tags=_add_broken_tags(name, tags),
         )
 
 
@@ -151,6 +212,7 @@ __all__ = [
     "ALL_AGENTS",
     "TRAINING_AGENTS",
     "TESTING_AGENTS",
+    "BROKEN_AGENTS",
     # Individual wrapped agents - Basic
     "BoulwareAgent",
     "ConcederAgent",

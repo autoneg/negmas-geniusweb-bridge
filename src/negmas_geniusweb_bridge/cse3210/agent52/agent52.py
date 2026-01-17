@@ -27,8 +27,9 @@ from tudelft_utilities_logging.Reporter import Reporter
 """
 BeanBot agent
 """
-class Agent52(DefaultParty):
 
+
+class Agent52(DefaultParty):
     def __init__(self, reporter: Reporter = None):
         super().__init__(reporter)
         self.getReporter().log(logging.INFO, "party is initialized")
@@ -36,7 +37,7 @@ class Agent52(DefaultParty):
         self._last_received_bid: Bid = None
         self._last_received_action = None
         self._opp_model = None
-        self._window_size = 10 # last 10 opponent bids are stored window below
+        self._window_size = 10  # last 10 opponent bids are stored window below
         self._opp_bids_window = []
         self._opp_best_bid = None
 
@@ -62,20 +63,27 @@ class Agent52(DefaultParty):
             )
 
             # Create the weighted frequency model
-            self._opp_model = FreqModelWeighted.create().With(self._profile.getProfile().getDomain(), None)
+            self._opp_model = FreqModelWeighted.create().With(
+                self._profile.getProfile().getDomain(), None
+            )
             self._opp_model.__class__ = FreqModelWeighted
-
 
             # Generate sorted (decr.) list of all possible bids with their corresponding utility values
             # Create reservation value after
             profile = self._profile.getProfile()
             allBids = AllBidsList(self._profile.getProfile().getDomain())
-            self._bid_utility_tuple = [(bid, profile.getUtility(bid)) for bid in allBids]
+            self._bid_utility_tuple = [
+                (bid, profile.getUtility(bid)) for bid in allBids
+            ]
             self._bid_utility_tuple.sort(key=itemgetter(1), reverse=True)
 
             # set reservation value to maximum of (0.4, worst bid utility in domain)
             alpha = 0.4
-            self._rsv_val = alpha if alpha > self._bid_utility_tuple[-1][1] else self._bid_utility_tuple[-1][1]
+            self._rsv_val = (
+                alpha
+                if alpha > self._bid_utility_tuple[-1][1]
+                else self._bid_utility_tuple[-1][1]
+            )
 
         # ActionDone is an action send by an opponent (an offer or an accept)
         elif isinstance(info, ActionDone):
@@ -118,8 +126,6 @@ class Agent52(DefaultParty):
             self._profile.close()
             self._profile = None
 
-    
-
     # give a description of your agent
     def getDescription(self) -> str:
         return "BeanBot implementation for Collaborative AI course"
@@ -127,15 +133,21 @@ class Agent52(DefaultParty):
     # execute a turn
     def _myTurn(self):
         # Update the frequency model and the issue weights with the last received bid
-        self._opp_model = self._opp_model.WithAction(self._last_received_action, self._progress)
+        self._opp_model = self._opp_model.WithAction(
+            self._last_received_action, self._progress
+        )
         self._opp_model.__class__ = FreqModelWeighted
         self._opp_model.updateIssueWeights()
 
         # Update the best bid offered by the opponent if the last received bid is better for us
         profile = self._profile.getProfile()
-        self._opp_best_bid = self._last_received_bid \
-            if self._opp_best_bid is None or profile.getUtility(self._last_received_bid) > profile.getUtility(self._opp_best_bid) \
+        self._opp_best_bid = (
+            self._last_received_bid
+            if self._opp_best_bid is None
+            or profile.getUtility(self._last_received_bid)
+            > profile.getUtility(self._opp_best_bid)
             else self._opp_best_bid
+        )
 
         # Update the bids in the window of last received bids (window has size self._window_size)
         if self._last_received_bid is not None:
@@ -152,7 +164,6 @@ class Agent52(DefaultParty):
         # send the action
         return action
 
-
     """
     AC_combi hybrid acceptance strategy.
     Uses AC_next condition in the first [0, T) fraction of the negotiation.
@@ -160,6 +171,7 @@ class Agent52(DefaultParty):
     This can be either if the received utility is better than overall best received bid, best bid in window,
         or average utility in window.
     """
+
     def _isGood(self, offeredBid: Bid, nextBid: Bid, T=0.9) -> bool:
         if offeredBid is None:
             return False
@@ -169,41 +181,60 @@ class Agent52(DefaultParty):
         progress = self._progress.get(time.time() * 1000)
 
         # AC_next or AC_combi if we are in phase [T, 1]
-        accept = profile.getUtility(offeredBid) > profile.getUtility(nextBid) \
-                 or (progress > T and self._window_max())
+        accept = profile.getUtility(offeredBid) > profile.getUtility(nextBid) or (
+            progress > T and self._window_max()
+        )
         return accept
 
     """
     The following three methods represent the three possible AC_combi methods described above.
     """
+
     def _window_max(self):
         # check if better than maximum utility in past window
         profile = self._profile.getProfile()
-        return profile.getUtility(self._last_received_bid) >= np.max(self._opp_bids_window)
+        # Fallback if window is empty
+        if len(self._opp_bids_window) == 0:
+            return False
+        return profile.getUtility(self._last_received_bid) >= np.max(
+            self._opp_bids_window
+        )
 
     def _window_avg(self):
         # check if better than average utility in past window
         profile = self._profile.getProfile()
-        return profile.getUtility(self._last_received_bid) >= np.mean(self._opp_bids_window)
+        # Fallback if window is empty
+        if len(self._opp_bids_window) == 0:
+            return False
+        return profile.getUtility(self._last_received_bid) >= np.mean(
+            self._opp_bids_window
+        )
 
     def _overall_max(self):
         # check if better than maximum utility received in entire negotiation
         profile = self._profile.getProfile()
-        return profile.getUtility(self._last_received_bid) >= profile.getUtility(self._opp_best_bid)
+        return profile.getUtility(self._last_received_bid) >= profile.getUtility(
+            self._opp_best_bid
+        )
 
     """
     Implements bidding strategy inspired by the AgreeableAgent2018 (ANAC2018).
     Take all bids higher than target utility and pick random one based on opponent preferences to send to opponent.
     """
+
     def _findBid(self) -> Bid:
         # e value determines concession rate by influencing the shape of the target utility curve
         e = 0.3
         max_util = self._bid_utility_tuple[0][1]
-        target_util = self._getUtilityGoal(self._progress.get(time.time() * 1000), e, Decimal(self._rsv_val), max_util)
+        target_util = self._getUtilityGoal(
+            self._progress.get(time.time() * 1000), e, Decimal(self._rsv_val), max_util
+        )
         # Allow for some additional (10% of target utility) randomness in the possible bids to send to opponent
         # in the first half of the negotiation. Otherwise, will send mostly the same bid constantly at first.
         if self._progress.get(time.time() * 1000) < 0.5:
-            target_util = target_util - Decimal(np.random.uniform(0, 0.1 * float(target_util)))
+            target_util = target_util - Decimal(
+                np.random.uniform(0, 0.1 * float(target_util))
+            )
 
         candidates = []
         opp_utilities = []
@@ -222,33 +253,49 @@ class Agent52(DefaultParty):
     Scale opponent utilities to [0, 1], apply fitness function to it and use fitness values as probabilities 
         for choosing each bid.
     """
+
     def _roulette_selection(self, candidates, utilities, fitness_func, eps=0.0001):
+        # Fallback if no candidates
+        if not candidates:
+            return self._bid_utility_tuple[0][0] if self._bid_utility_tuple else None
+
         normalised_utils = np.array(utilities)
 
         # if same utilities, choose random bid, otherwise continue scaling to [0, 1]
-        if np.max(normalised_utils) - np.min(normalised_utils) < eps:
+        if (
+            len(normalised_utils) == 0
+            or np.max(normalised_utils) - np.min(normalised_utils) < eps
+        ):
             return np.random.choice(candidates)
 
         # scale utilities to [0, 1]
-        normalised_utils = (normalised_utils - np.min(normalised_utils)) / (np.max(normalised_utils) - np.min(normalised_utils))
+        normalised_utils = (normalised_utils - np.min(normalised_utils)) / (
+            np.max(normalised_utils) - np.min(normalised_utils)
+        )
         # apply fitness function and divide by total sum in order to obtain probability values for each bid
         fitnesses = fitness_func(normalised_utils)
         fitnesses /= np.sum(fitnesses)
         # return random bid using fitnesses as weights, or completely random bid if something went wrong in fitnesses
-        return np.random.choice(candidates, p=fitnesses) if not np.isnan(fitnesses).any() else np.random.choice(candidates)
+        return (
+            np.random.choice(candidates, p=fitnesses)
+            if not np.isnan(fitnesses).any()
+            else np.random.choice(candidates)
+        )
 
     """
     Next two functions allow for two different shapes for the fitness transformation of the utilities
     """
+
     def _fitness_linear(self, normalised_utils):
         return 0.3 + 0.7 * normalised_utils
 
     def _fitness_exp(self, normalised_utils, alpha=3):
-        return np.exp(-alpha*(1-normalised_utils))
+        return np.exp(-alpha * (1 - normalised_utils))
 
     """
     Same function as used by time_dependent_agent to determine the curve of utility target line.
     """
+
     def _getUtilityGoal(
         self, t: float, e: float, minUtil: Decimal, maxUtil: Decimal
     ) -> Decimal:

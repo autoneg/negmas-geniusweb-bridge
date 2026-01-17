@@ -152,21 +152,11 @@ AGENTS_WITH_KNOWN_ISSUES = {
     "Agent22": "May throw scipy divide by zero errors",
     "Agent68": "May have issues handling opening bid",
     "ProcrastinAgent": "May have issues with first offer accepted",
-    "HardlinerAgent": "Never concedes - unlikely to reach agreement",
     # ANL2023 agents with edge case issues
-    "AgentFO3": "Empty bid list on small domains (randrange(0, 0))",
     "AmbitiousAgent": "ProgressRounds missing getStart method",
-    "AntAllianceAgent": "Empty bid list on small domains",
-    "KBTimeDiffAgent": "Division by zero on small domains",
-    "SpaghettiAgent": "Empty deque pop on small domains",
     # ANL2022 agents with edge case issues
-    "AgentFO2": "Empty bid list on small domains",
     "BIUAgent": "May timeout >60 secs on some domains",
-    "ThirdAgent": "Empty bid list on small domains",
     # CSE3210 agents with edge case issues
-    "Agent18": "Zero-size array reduction issues",
-    "Agent33": "Random choice from empty array",
-    "Agent52": "Random choice from empty array",
     "Agent67": "Edge case issues on small domains",
 }
 
@@ -247,9 +237,7 @@ class TestBasicAgentsVsGeniusWeb:
         """Test that basic agents can negotiate against BoulwareAgent."""
         agent_cls = get_agent_class(agent_name)
 
-        state = run_negotiation(
-            agent_cls, BoulwareAgent, ufun_a, ufun_b, simple_issues
-        )
+        state = run_negotiation(agent_cls, BoulwareAgent, ufun_a, ufun_b, simple_issues)
 
         assert not state.running, f"{agent_name} negotiation did not complete"
         assert state.step > 0, f"{agent_name} made no progress"
@@ -279,9 +267,7 @@ class TestANAC2020AgentsVsGeniusWeb:
         """Test that ANAC 2020 agents can negotiate against BoulwareAgent."""
         agent_cls = get_agent_class(agent_name)
 
-        state = run_negotiation(
-            agent_cls, BoulwareAgent, ufun_a, ufun_b, simple_issues
-        )
+        state = run_negotiation(agent_cls, BoulwareAgent, ufun_a, ufun_b, simple_issues)
 
         assert not state.running, f"{agent_name} negotiation did not complete"
         assert state.step > 0, f"{agent_name} made no progress"
@@ -357,9 +343,7 @@ class TestANL2023AgentsVsGeniusWeb:
 
         agent_cls = get_agent_class(agent_name)
 
-        state = run_negotiation(
-            agent_cls, BoulwareAgent, ufun_a, ufun_b, simple_issues
-        )
+        state = run_negotiation(agent_cls, BoulwareAgent, ufun_a, ufun_b, simple_issues)
 
         assert not state.running, f"{agent_name} negotiation did not complete"
         assert state.step > 0, f"{agent_name} made no progress"
@@ -395,9 +379,7 @@ class TestCSE3210AgentsVsGeniusWeb:
 
         agent_cls = get_agent_class(agent_name)
 
-        state = run_negotiation(
-            agent_cls, BoulwareAgent, ufun_a, ufun_b, simple_issues
-        )
+        state = run_negotiation(agent_cls, BoulwareAgent, ufun_a, ufun_b, simple_issues)
 
         assert not state.running, f"{agent_name} negotiation did not complete"
         assert state.step > 0, f"{agent_name} made no progress"

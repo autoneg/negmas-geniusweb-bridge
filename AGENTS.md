@@ -1,5 +1,18 @@
 # AGENTS.md
 
+## Recent Releases
+
+### v0.1.1 (2026-01-14)
+**Fixed case sensitivity issues for Linux/CI compatibility**
+
+- Fixed three directories with uppercase names causing import failures on case-sensitive filesystems:
+  - `BIU_agent` → `biu_agent` (9 files)
+  - `Pinar_Agent` → `pinar_agent` (4 files)
+  - `CSE3210` → `cse3210` (57 files)
+- All tests now pass on both Python 3.13 and 3.14
+- Successfully published to PyPI: https://pypi.org/project/negmas-geniusweb-bridge/
+- GitHub Release: https://github.com/autoneg/negmas-geniusweb-bridge/releases/tag/v0.1.1
+
 ## Build/Test Commands
 - Install: `uv sync`
 - Run all tests: `python -m pytest`

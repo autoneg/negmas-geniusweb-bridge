@@ -29,6 +29,10 @@ search_numb = 2500
 class Agent41(DefaultParty):
     """
     Template agent that offers random bids until a bid with sufficient utility is offered.
+
+    Note:
+        Modified for negmas-geniusweb-bridge: Added fallback to use best bid from AllBidsList
+        when no suitable bid is found in _find_bid() to prevent returning None on small domains.
     """
 
     def __init__(self, reporter: Reporter = None):
@@ -38,7 +42,6 @@ class Agent41(DefaultParty):
         self._last_received_bid: Bid = None
         self._best_past_bid: Bid = None
         self.opponentModel = FrequencyOpponentModel.create()
-
 
         #  maximal advantage that our opponent might have over us to accept the bid in the later phase
         self.util_adv_from_accept = decimal.Decimal(0.2)
@@ -53,8 +56,7 @@ class Agent41(DefaultParty):
         # progress point at which the late strategy starts being applied
         self.progress_fast = 0.95
         # starting utility range for which the offers are considered
-        self.utility_range = [decimal.Decimal(0.9),
-                              decimal.Decimal(1.1)]
+        self.utility_range = [decimal.Decimal(0.9), decimal.Decimal(1.1)]
         # linear decrease factors in different stages of the negotiations
         self.slow_decrease = decimal.Decimal(0.0005)
         self.mid_decrease = decimal.Decimal(0.001)
@@ -90,13 +92,13 @@ class Agent41(DefaultParty):
         elif isinstance(info, ActionDone):
             action: Action = cast(ActionDone, info).getAction()
 
-            self.opponentModel = self.opponentModel.WithAction(action=action,
-                                                               progress=self._progress)
+            self.opponentModel = self.opponentModel.WithAction(
+                action=action, progress=self._progress
+            )
 
             # if it is an offer, set the last received bid
             if isinstance(action, Offer):
                 self._last_received_bid = cast(Offer, action).getBid()
-
 
         # YourTurn notifies you that it is your turn to act
         elif isinstance(info, YourTurn):
@@ -130,8 +132,6 @@ class Agent41(DefaultParty):
         if self._profile is not None:
             self._profile.close()
             self._profile = None
-
-    
 
     # give a description of your agent
     def getDescription(self) -> str:
@@ -199,13 +199,27 @@ class Agent41(DefaultParty):
         if self._verify_reservation_val():
             return self._best_past_bid
 
-        # store the best bid found so far
-        best_bid: Bid = self._best_past_bid
+        all_bids = AllBidsList(domain)
+
+        # Initialize best_bid with a fallback from AllBidsList if _best_past_bid is None
+        # This prevents returning None on small domains or at negotiation start
+        if self._best_past_bid is not None:
+            best_bid: Bid = self._best_past_bid
+        else:
+            # Find best utility bid as fallback
+            best_bid = all_bids.get(0)
+            best_util = profile.getUtility(best_bid)
+            for i in range(min(100, all_bids.size())):
+                bid = all_bids.get(i)
+                util = profile.getUtility(bid)
+                if util > best_util:
+                    best_bid = bid
+                    best_util = util
+
         # store the difference between the utility of the best bid
         # and the upper threshold of the range
         best_dist = decimal.Decimal(1.0)
 
-        all_bids = AllBidsList(domain)
         # search through a number of random bids to find a suitable bid
         for _ in range(search_numb):
             # get the random bid and the utility of it
@@ -247,12 +261,16 @@ class Agent41(DefaultParty):
         or if the utility of the reservation bid exceeds our upper utility threshold.
         """
         if self._best_past_bid is not None:
-            reservation_val = self._profile.getProfile().getUtility(
-                self._best_past_bid)
-            if self._progress.get(
-                    0) >= reservation_progress and reservation_val >= self.minimal_reservation_val:
+            reservation_val = self._profile.getProfile().getUtility(self._best_past_bid)
+            if (
+                self._progress.get(0) >= reservation_progress
+                and reservation_val >= self.minimal_reservation_val
+            ):
                 return True
-            if self._profile.getProfile().getUtility(self._best_past_bid) >= self.utility_range[1]:
+            if (
+                self._profile.getProfile().getUtility(self._best_past_bid)
+                >= self.utility_range[1]
+            ):
                 return True
         return False
 
@@ -265,7 +283,9 @@ class Agent41(DefaultParty):
         our_util = profile.getUtility(bid)
 
         # do not consider the bid if it is worse than our reservation bid
-        if self._best_past_bid is not None and our_util < profile.getUtility(self._best_past_bid):
+        if self._best_past_bid is not None and our_util < profile.getUtility(
+            self._best_past_bid
+        ):
             return False
         # if a certain point in the negotiation has not been reached,
         # propose the bid if it falls into the accepted utility range
@@ -275,5 +295,9 @@ class Agent41(DefaultParty):
         # otherwise, in addition to considering the utility range, also consider the utility of our opponent, make sure
         # that the utility difference between us and the opponent is not too high
         opp_util = self.opponentModel.getUtility(bid)
-        return our_util + self.util_adv_from_offer > opp_util > our_util - self.util_adv_to_offer \
-               and self.utility_range[0] < our_util < self.utility_range[1]
+        return (
+            our_util + self.util_adv_from_offer
+            > opp_util
+            > our_util - self.util_adv_to_offer
+            and self.utility_range[0] < our_util < self.utility_range[1]
+        )
