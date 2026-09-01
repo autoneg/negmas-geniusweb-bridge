@@ -962,7 +962,7 @@ class BlingBling(DefaultParty):
             reporter: Optional reporter for logging.
         """
         super().__init__(reporter)
-        self._random = random.Random()
+        self._random = random.Random(random.random())
 
         # Bid tracking
         self._now_received_bid: Bid | None = None

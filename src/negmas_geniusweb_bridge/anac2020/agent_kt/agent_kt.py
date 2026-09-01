@@ -827,7 +827,7 @@ class AgentKT(DefaultParty):
             reporter: Optional reporter for logging.
         """
         super().__init__(reporter)
-        self._random = random.Random()
+        self._random = random.Random(random.random())
 
         # Profile and connection
         self._profile_interface: ProfileInterface | None = None

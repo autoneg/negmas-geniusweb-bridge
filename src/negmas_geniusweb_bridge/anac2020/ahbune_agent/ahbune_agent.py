@@ -252,7 +252,7 @@ class SimilarityMap:
         self._min_imp_bid: Bid | None = None
         self._available_values: dict[str, list[Value]] = {}
         self._forbidden_values: dict[str, list[Value]] = {}
-        self._random = random.Random()
+        self._random = random.Random(random.random())
         self._sorted_issue_imp_map: OrderedDict[str, float] = OrderedDict()
         self._renew_maps()
 
@@ -724,7 +724,7 @@ class AhBuNeAgent(DefaultParty):
             reporter: Optional reporter for logging.
         """
         super().__init__(reporter)
-        self._random = random.Random()
+        self._random = random.Random(random.random())
 
         self._our_num_first_bids: int = 0
         self._our_num_last_bids: int = 0

@@ -642,7 +642,7 @@ class AgentP1DAMO(DefaultParty):
         self._me: PartyId | None = None
         self._progress: Progress | None = None
         self._last_received_action: Action | None = None
-        self._rand = random.Random()
+        self._rand = random.Random(random.random())
         self._allbids: AllBidsList | None = None
         self._settings: Settings | None = None
         self._fitness_function: FitnessBid | None = None

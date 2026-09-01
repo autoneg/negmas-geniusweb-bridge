@@ -235,7 +235,7 @@ class SubAgent:
         self.threshold_low = 0.99
         self.threshold_high = 1.0
         self.pattern = 0
-        self._rand = random.Random()
+        self._rand = random.Random(random.random())
 
     def init(self, utility_space: UtilitySpace, me: PartyId) -> None:
         """Initialize the sub-agent."""

@@ -278,7 +278,7 @@ class DHBiddingStrategy:
         self._opponent_model = opponent_model
         self._all_bids = AllBidsList(profile.getDomain())
         self._reservation_threshold = 0.75
-        self._random = random.Random()
+        self._random = random.Random(random.random())
 
     def generate_bid(
         self,
@@ -648,7 +648,7 @@ class TheDiceHaggler2021(DefaultParty):
         count = num_bids.intValue() if hasattr(num_bids, "intValue") else int(num_bids)
 
         # Try to find a random bid above fixed utility
-        rng = random.Random()
+        rng = random.Random(random.random())
         for _ in range(100):
             idx = rng.randint(0, count - 1)
             bid = self._all_bids.get(idx)

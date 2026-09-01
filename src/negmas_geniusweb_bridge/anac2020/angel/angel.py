@@ -175,7 +175,7 @@ class Angel(DefaultParty):
             reporter: Optional reporter for logging.
         """
         super().__init__(reporter)
-        self._random = random.Random()
+        self._random = random.Random(random.random())
 
         # Back-end variables
         self._me: PartyId | None = None

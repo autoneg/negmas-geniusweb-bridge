@@ -733,7 +733,7 @@ class AzarAgent(DefaultParty):
             reporter: Optional reporter for logging.
         """
         super().__init__(reporter)
-        self._random = random.Random()
+        self._random = random.Random(random.random())
 
         # Bid tracking
         self._number_of_same_consecutive_bid = 0

@@ -415,7 +415,7 @@ class AgentXX(DefaultParty):
         self._me: PartyId | None = None
         self._progress: Progress | None = None
         self._last_received_action: Action | None = None
-        self._random = random.Random()
+        self._random = random.Random(random.random())
         self._all_bids: AllBidsList | None = None
 
         # SHAOP elicitation

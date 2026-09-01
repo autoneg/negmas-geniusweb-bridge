@@ -57,7 +57,7 @@ class SmartAgent(DefaultParty):
         self.profileInt: ProfileInterface = None
         self.progress: ProgressTime = None
         self.me: PartyId = None
-        self.random: final(random) = random.Random()
+        self.random: final(random) = random.Random(random.random())
         self.protocol = ""
         self.opponent_name: str = None
         self.settings: Settings = None

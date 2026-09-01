@@ -280,7 +280,7 @@ class ExpandedStrategy:
     ):
         self._me = me
         self._profile = profile
-        self._random = random.Random()
+        self._random = random.Random(random.random())
 
         # Initialize bid chooser
         self._bid_chooser = BidChooser(profile)

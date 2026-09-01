@@ -539,7 +539,7 @@ class Anaconda(DefaultParty):
             reporter: Optional reporter for logging.
         """
         super().__init__(reporter)
-        self._rand = random.Random()
+        self._rand = random.Random(random.random())
         self._imp_map: SelfMap | None = None
         self._opponent_imp_map: OpponentMap | None = None
 

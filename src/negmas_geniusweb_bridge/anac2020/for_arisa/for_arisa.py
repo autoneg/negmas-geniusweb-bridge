@@ -210,7 +210,7 @@ class GeneticAlgorithm:
         """
         self._domain = domain
         self._bid_ranking = bid_ranking
-        self._random = random.Random()
+        self._random = random.Random(random.random())
         self._pop_size = 500
         self._max_iter_num = 170
         self._mutation_rate = 0.04
